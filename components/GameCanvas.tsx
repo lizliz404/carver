@@ -2,18 +2,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { GameEngine, Direction } from '../lib/game/engine';
+import { STARTING_LEVEL, createGameEngine } from '../lib/game/levels';
 import { Renderer } from '../lib/game/renderer';
-
-const LEVEL = [
-  "######",
-  "#@...#",
-  "#.##.#",
-  "#    #",
-  "#.  .#",
-  "#.##.#",
-  "#...$#",
-  "######"
-];
 
 const DIRECTIONS: Array<{ label: string; dir: Direction; className: string }> = [
   { label: '↑', dir: 'UP', className: 'col-start-2 row-start-1' },
@@ -36,7 +26,7 @@ export default function GameCanvas() {
   const [status, setStatus] = useState('IDLE');
 
   const resetGame = () => {
-    engineRef.current = new GameEngine(LEVEL);
+    engineRef.current = createGameEngine();
     setStatus('READY');
   };
 
@@ -69,7 +59,7 @@ export default function GameCanvas() {
 
     window.addEventListener('resize', resize);
 
-    engineRef.current = new GameEngine(LEVEL);
+    engineRef.current = new GameEngine(STARTING_LEVEL);
     rendererRef.current = new Renderer(canvas);
     resize();
 

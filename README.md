@@ -10,3 +10,5 @@ A browser-first pixel puzzle where every move carves the world into ice.
    `npm install`
 2. Run the app:
    `npm run dev`
+3. Verify before shipping:
+   `npm run check && npm run build`

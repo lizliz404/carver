@@ -50,16 +50,18 @@ The current product should be judged as a playable puzzle toy first, not a conte
 - Use keyboard controls for desktop: `WASD`, arrow keys, and `R` for restart.
 - Use mobile D-pad buttons and swipe gestures for touch screens.
 - Render Canvas at device pixel ratio and disable image smoothing to improve crispness.
+- Keep the active level data in `lib/game/levels.ts`, not inline inside the React view.
+- Keep `npm run check` as the lightweight release gate: lint, TypeScript, and engine regression tests.
 - Keep README focused on running the project.
 - Keep this PRD as the canonical place for product interpretation and iteration notes.
 
 ## Known Gaps
 
-- The current level set is tiny and partly split between the active inline level and an older unused `levels.ts` path.
+- The current level set is tiny and has no level select or progression.
 - The player avatar is functional but visually generic.
 - The UI still has more terminal/protocol chrome than the product may need.
 - There is no level select, tutorial progression, or win/retry analytics.
-- There is no automated browser interaction test for touch controls yet.
+- There are engine regression tests, but no automated browser interaction test for touch controls yet.
 
 ## Validation Criteria
 

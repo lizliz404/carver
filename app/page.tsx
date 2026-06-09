@@ -28,7 +28,12 @@ export default function Page() {
             
             {/* Header Text */}
             <div className="w-full flex items-center justify-between">
-              <h1 className="text-4xl md:text-5xl font-mono font-bold tracking-tighter text-[#c0caf5]">CARVER</h1>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-mono font-bold tracking-tighter text-[#c0caf5]">CARVER</h1>
+                <p className="mt-1 max-w-[22rem] text-[11px] uppercase tracking-widest text-[#7aa2f7]">
+                  Move once. Slide until friction. Every step turns footing into ice.
+                </p>
+              </div>
               <div className="text-[#565f89] flex items-center gap-2 text-xs uppercase tracking-widest bg-[#1a1b26] px-3 py-1 border border-[#24283b]">
                 Execute Mode
               </div>
