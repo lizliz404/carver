@@ -5,26 +5,37 @@ export class Renderer {
   private width: number;
   private height: number;
   private tileSize = 32;
+  private dpr = 1;
 
   constructor(canvas: HTMLCanvasElement) {
-    this.ctx = canvas.getContext('2d')!;
-    this.width = canvas.width;
-    this.height = canvas.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas 2D context is unavailable');
+
+    this.ctx = ctx;
+    this.width = canvas.clientWidth || canvas.width;
+    this.height = canvas.clientHeight || canvas.height;
+    this.ctx.imageSmoothingEnabled = false;
   }
 
-  public resize(w: number, h: number, cols: number, rows: number) {
+  public resize(w: number, h: number, cols: number, rows: number, dpr = 1) {
     this.width = w;
     this.height = h;
+    this.dpr = dpr;
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.ctx.imageSmoothingEnabled = false;
+
     const maxTileW = w / cols;
     const maxTileH = h / rows;
     this.tileSize = Math.floor(Math.min(maxTileW, maxTileH));
   }
 
   public draw(state: GameState, t: number) {
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    this.ctx.imageSmoothingEnabled = false;
     this.ctx.clearRect(0, 0, this.width, this.height);
 
-    const ox = (this.width - state.cols * this.tileSize) / 2;
-    const oy = (this.height - state.rows * this.tileSize) / 2;
+    const ox = Math.floor((this.width - state.cols * this.tileSize) / 2);
+    const oy = Math.floor((this.height - state.rows * this.tileSize) / 2);
 
     for (let y = 0; y < state.rows; y++) {
       for (let x = 0; x < state.cols; x++) {
@@ -59,7 +70,6 @@ export class Renderer {
       }
     }
 
-    // Draw Player
     const px = ox + state.player.x * this.tileSize;
     const py = oy + state.player.y * this.tileSize;
     
@@ -69,18 +79,18 @@ export class Renderer {
     this.ctx.fill();
     
     if (state.sliding) {
-      // Trail
       this.ctx.strokeStyle = '#c0caf5';
       this.ctx.globalAlpha = 0.5;
       this.ctx.lineWidth = 4;
       this.ctx.beginPath();
-      this.ctx.moveTo(px + this.tileSize/2, py + this.tileSize/2);
-      let dx=0, dy=0;
-      if (state.sliding==='UP') dy = this.tileSize/2;
-      if (state.sliding==='DOWN') dy = -this.tileSize/2;
-      if (state.sliding==='LEFT') dx = this.tileSize/2;
-      if (state.sliding==='RIGHT') dx = -this.tileSize/2;
-      this.ctx.lineTo(px + this.tileSize/2 + dx, py + this.tileSize/2 + dy);
+      this.ctx.moveTo(px + this.tileSize / 2, py + this.tileSize / 2);
+      let dx = 0;
+      let dy = 0;
+      if (state.sliding === 'UP') dy = this.tileSize / 2;
+      if (state.sliding === 'DOWN') dy = -this.tileSize / 2;
+      if (state.sliding === 'LEFT') dx = this.tileSize / 2;
+      if (state.sliding === 'RIGHT') dx = -this.tileSize / 2;
+      this.ctx.lineTo(px + this.tileSize / 2 + dx, py + this.tileSize / 2 + dy);
       this.ctx.stroke();
       this.ctx.globalAlpha = 1.0;
     }

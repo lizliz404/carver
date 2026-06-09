@@ -11,7 +11,7 @@ export type Point = { x: number; y: number };
 export interface GameState {
   board: Tile[][];
   player: Point;
-  px: number; // For rendering smooth interpolation
+  px: number;
   py: number;
   state: 'IDLE' | 'MOVING' | 'SLIDING' | 'WON' | 'DEAD';
   slideDir: Point | null;
