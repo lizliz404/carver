@@ -1,8 +1,35 @@
+import Script from 'next/script';
 import GameCanvas from '../components/GameCanvas';
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://carver.pages.dev';
+
+const gameSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'VideoGame',
+  name: 'Carver',
+  url: siteUrl,
+  applicationCategory: 'Game',
+  gamePlatform: ['Web browser', 'Mobile browser', 'Desktop browser'],
+  genre: ['Puzzle', 'Logic game', 'Sliding puzzle'],
+  description:
+    'Carver is a free browser puzzle game where every move changes the board: step off dirt to turn it into ice, slide across frozen tiles, and carve a safe route to the goal.',
+  playMode: 'SinglePlayer',
+  operatingSystem: 'Any',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+  },
+};
 
 export default function Page() {
   return (
     <main className="h-[100dvh] w-full flex flex-col bg-[#05070a] text-[#c0caf5] font-mono overflow-hidden select-none">
+      <Script
+        id="carver-video-game-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(gameSchema) }}
+      />
       
       {/* Header */}
       <header className="h-12 border-b border-[#24283b] flex items-center justify-between px-6 bg-[#16161e] shrink-0">
@@ -20,21 +47,24 @@ export default function Page() {
       <div className="flex-1 flex min-h-0">
         
         {/* Play Area */}
-        <section className="flex-1 flex flex-col items-center justify-center bg-[#0a0c10] relative overflow-y-auto">
+        <section className="flex-1 overflow-y-auto bg-[#0a0c10] relative overscroll-contain">
           {/* Grid Background */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#414868 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
+          <div className="fixed inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#414868 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
           
-          <div className="z-10 w-full max-w-2xl px-4 flex flex-col gap-6 items-center">
+          <div className="relative z-10 mx-auto flex min-h-full w-full max-w-2xl flex-col items-center justify-center gap-6 px-4 py-6 md:py-8">
             
             {/* Header Text */}
-            <div className="w-full flex items-center justify-between">
+            <div className="w-full flex items-start justify-between gap-4">
               <div>
                 <h1 className="text-4xl md:text-5xl font-mono font-bold tracking-tighter text-[#c0caf5]">CARVER</h1>
-                <p className="mt-1 max-w-[22rem] text-[11px] uppercase tracking-widest text-[#7aa2f7]">
-                  Move once. Slide until friction. Every step turns footing into ice.
+                <p className="mt-2 max-w-[34rem] text-sm leading-6 text-[#9aa5ce]">
+                  Carver is a free browser puzzle game about irreversible movement. Move with WASD, arrow keys, swipe, or the touch buttons. Each step off dirt turns that tile into ice, so every route you carve changes how the next move behaves.
+                </p>
+                <p className="mt-2 max-w-[34rem] text-[11px] uppercase tracking-widest text-[#7aa2f7]">
+                  Reach the green goal. Use untouched dirt to stop. Press R to restart.
                 </p>
               </div>
-              <div className="text-[#565f89] flex items-center gap-2 text-xs uppercase tracking-widest bg-[#1a1b26] px-3 py-1 border border-[#24283b]">
+              <div className="text-[#565f89] flex shrink-0 items-center gap-2 text-xs uppercase tracking-widest bg-[#1a1b26] px-3 py-1 border border-[#24283b]">
                 Execute Mode
               </div>
             </div>
@@ -62,17 +92,32 @@ export default function Page() {
               </div>
             </div>
 
+            <section aria-labelledby="how-to-play" className="w-full rounded border border-[#24283b] bg-[#16161e]/95 p-4 text-[#9aa5ce] md:hidden">
+              <h2 id="how-to-play" className="text-xs font-black uppercase tracking-widest text-[#c0caf5]">How to play Carver</h2>
+              <ul className="mt-3 space-y-2 text-xs leading-5">
+                <li><strong className="text-[#c0caf5]">Move:</strong> tap the arrows, swipe on the board, or use WASD / arrow keys.</li>
+                <li><strong className="text-[#c0caf5]">Rule:</strong> leaving dirt converts it into ice; ice keeps you sliding.</li>
+                <li><strong className="text-[#c0caf5]">Goal:</strong> plan your route, preserve stopping points, and reach the green tile.</li>
+              </ul>
+            </section>
+
           </div>
         </section>
 
         {/* Documentation / Logic Column */}
-        <aside className="w-80 lg:w-[400px] border-l border-[#24283b] bg-[#16161e] p-6 space-y-8 overflow-y-auto shrink-0 hidden md:flex md:flex-col">
+        <aside className="h-full w-80 lg:w-[400px] border-l border-[#24283b] bg-[#16161e] p-6 space-y-8 overflow-y-auto overscroll-contain shrink-0 hidden md:flex md:flex-col">
           
           <div className="space-y-4">
-            <h3 className="text-[#7aa2f7] text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
-              Mechanics Readme
-            </h3>
+            <h2 className="text-[#7aa2f7] text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+              How to Play
+            </h2>
             <div className="p-4 bg-[#1a1b26] border border-[#24283b] space-y-4">
+              <div className="flex gap-3">
+                <span className="text-[#bb9af7] mt-1 text-[10px]">■</span>
+                <div className="text-[11px] leading-relaxed text-[#9aa5ce]">
+                  <strong className="text-[#c0caf5]">Reach the green goal.</strong> Move with WASD, arrow keys, swipe, or touch controls. Press R to restart.
+                </div>
+              </div>
               <div className="flex gap-3">
                 <span className="text-[#f7768e] mt-1 text-[10px]">■</span>
                 <div className="text-[11px] leading-relaxed text-[#9aa5ce]">
@@ -95,9 +140,9 @@ export default function Page() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-[#bb9af7] text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+            <h2 className="text-[#bb9af7] text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
                Constraints
-            </h3>
+            </h2>
             <div className="space-y-2 font-mono text-[9px]">
               <div className="flex justify-between border-b border-[#24283b] pb-2">
                 <span className="text-[#565f89]">Core Mechanic</span>

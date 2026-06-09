@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { GameEngine, Direction } from '../lib/game/engine';
 import { STARTING_LEVEL, createGameEngine } from '../lib/game/levels';
 import { Renderer } from '../lib/game/renderer';
@@ -23,16 +23,26 @@ export default function GameCanvas() {
   const engineRef = useRef<GameEngine | null>(null);
   const rendererRef = useRef<Renderer | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const inputFeedbackTimerRef = useRef<number | null>(null);
   const [status, setStatus] = useState('IDLE');
+  const [lastInput, setLastInput] = useState<Direction | 'RESET' | null>(null);
 
-  const resetGame = () => {
+  const flashInput = useCallback((input: Direction | 'RESET') => {
+    if (inputFeedbackTimerRef.current) window.clearTimeout(inputFeedbackTimerRef.current);
+    setLastInput(input);
+    inputFeedbackTimerRef.current = window.setTimeout(() => setLastInput(null), 180);
+  }, []);
+
+  const resetGame = useCallback(() => {
     engineRef.current = createGameEngine();
     setStatus('READY');
-  };
+    flashInput('RESET');
+  }, [flashInput]);
 
-  const move = (dir: Direction) => {
+  const move = useCallback((dir: Direction) => {
     engineRef.current?.input(dir);
-  };
+    flashInput(dir);
+  }, [flashInput]);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -87,6 +97,7 @@ export default function GameCanvas() {
     return () => {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(af);
+      if (inputFeedbackTimerRef.current) window.clearTimeout(inputFeedbackTimerRef.current);
     };
   }, []);
 
@@ -112,7 +123,7 @@ export default function GameCanvas() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [move, resetGame]);
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 sm:block">
@@ -134,8 +145,16 @@ export default function GameCanvas() {
           aria-label="Carver game board. Swipe or use the on-screen direction buttons to move."
         />
         <div className="pointer-events-none absolute right-3 top-3 rounded border border-[#24283b] bg-[#1a1b26]/95 px-2 py-1 font-mono text-xs font-bold text-[#c0caf5]">
-          {status}
+          <span>{status}</span>
+          {lastInput ? <span className="ml-2 text-[#7aa2f7]">{'//'} {lastInput}</span> : null}
         </div>
+        {lastInput ? (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div className="rounded-full border border-[#7aa2f7]/70 bg-[#05070a]/75 px-5 py-2 text-xs font-black uppercase tracking-[0.35em] text-[#c0caf5] shadow-[0_0_28px_rgba(122,162,247,0.35)] animate-pulse">
+              {lastInput === 'RESET' ? 'Reset' : `Move ${lastInput}`}
+            </div>
+          </div>
+        ) : null}
       </div>
       <div className="flex shrink-0 items-end justify-between gap-3 sm:hidden">
         <div className="rounded-xl border border-[#414868] bg-[#05070a] p-2 shadow-[0_0_24px_rgba(0,0,0,0.35)]">
@@ -146,7 +165,11 @@ export default function GameCanvas() {
                 key={dir}
                 type="button"
                 aria-label={`Move ${dir.toLowerCase()}`}
-                className={`${className} h-14 w-14 rounded-lg border border-[#7aa2f7]/60 bg-[#1a1b26] text-2xl font-black text-[#c0caf5] shadow active:scale-95 active:bg-[#7aa2f7] active:text-[#05070a]`}
+                className={`${className} h-14 w-14 rounded-lg border bg-[#1a1b26] text-2xl font-black shadow transition duration-150 active:scale-95 active:bg-[#7aa2f7] active:text-[#05070a] ${
+                  lastInput === dir
+                    ? 'border-[#7aa2f7] text-[#05070a] bg-[#7aa2f7] ring-2 ring-[#7aa2f7]/40'
+                    : 'border-[#7aa2f7]/60 text-[#c0caf5]'
+                }`}
                 onPointerDown={(event) => {
                   event.preventDefault();
                   move(dir);
