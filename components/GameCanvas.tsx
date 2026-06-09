@@ -125,36 +125,38 @@ export default function GameCanvas() {
   }, []);
 
   return (
-    <>
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full block touch-none"
-        onPointerDown={(event) => {
-          touchStartRef.current = { x: event.clientX, y: event.clientY };
-        }}
-        onPointerUp={(event) => {
-          const start = touchStartRef.current;
-          touchStartRef.current = null;
-          if (!start) return;
+    <div className="flex h-full min-h-0 flex-col gap-3 sm:block">
+      <div className="relative min-h-0 flex-1 sm:h-full">
+        <canvas
+          ref={canvasRef}
+          className="block h-full w-full touch-none"
+          onPointerDown={(event) => {
+            touchStartRef.current = { x: event.clientX, y: event.clientY };
+          }}
+          onPointerUp={(event) => {
+            const start = touchStartRef.current;
+            touchStartRef.current = null;
+            if (!start) return;
 
-          const dir = directionFromSwipe(event.clientX - start.x, event.clientY - start.y);
-          if (dir) move(dir);
-        }}
-        aria-label="Carver game board. Swipe or use the on-screen direction buttons to move."
-      />
-      <div className="absolute top-3 right-3 pointer-events-none text-xs font-mono font-bold text-[#c0caf5] bg-[#1a1b26]/95 px-2 py-1 border border-[#24283b] rounded">
-        {status}
+            const dir = directionFromSwipe(event.clientX - start.x, event.clientY - start.y);
+            if (dir) move(dir);
+          }}
+          aria-label="Carver game board. Swipe or use the on-screen direction buttons to move."
+        />
+        <div className="pointer-events-none absolute right-3 top-3 rounded border border-[#24283b] bg-[#1a1b26]/95 px-2 py-1 font-mono text-xs font-bold text-[#c0caf5]">
+          {status}
+        </div>
       </div>
-      <div className="absolute left-3 right-3 bottom-3 flex items-end justify-between gap-3 sm:hidden">
-        <div className="rounded-xl border border-[#414868] bg-[#05070a]/75 p-2 shadow-[0_0_24px_rgba(0,0,0,0.45)] backdrop-blur-sm">
+      <div className="flex shrink-0 items-end justify-between gap-3 sm:hidden">
+        <div className="rounded-xl border border-[#414868] bg-[#05070a] p-2 shadow-[0_0_24px_rgba(0,0,0,0.35)]">
           <div className="mb-1 text-center text-[9px] font-bold uppercase tracking-widest text-[#7aa2f7]">Tap / Swipe</div>
-          <div className="grid grid-cols-3 grid-rows-2 gap-2 touch-none select-none" aria-label="Touch movement controls">
+          <div className="grid touch-none select-none grid-cols-3 grid-rows-2 gap-2" aria-label="Touch movement controls">
             {DIRECTIONS.map(({ label, dir, className }) => (
               <button
                 key={dir}
                 type="button"
                 aria-label={`Move ${dir.toLowerCase()}`}
-                className={`${className} h-14 w-14 rounded-lg border border-[#7aa2f7]/60 bg-[#1a1b26]/95 text-2xl font-black text-[#c0caf5] shadow active:scale-95 active:bg-[#7aa2f7] active:text-[#05070a]`}
+                className={`${className} h-14 w-14 rounded-lg border border-[#7aa2f7]/60 bg-[#1a1b26] text-2xl font-black text-[#c0caf5] shadow active:scale-95 active:bg-[#7aa2f7] active:text-[#05070a]`}
                 onPointerDown={(event) => {
                   event.preventDefault();
                   move(dir);
@@ -167,7 +169,7 @@ export default function GameCanvas() {
         </div>
         <button
           type="button"
-          className="h-14 rounded-lg border border-[#f7768e]/70 bg-[#1a1b26]/95 px-4 text-xs font-black uppercase tracking-widest text-[#f7768e] shadow active:scale-95 active:bg-[#f7768e] active:text-[#05070a]"
+          className="h-14 rounded-lg border border-[#f7768e]/70 bg-[#1a1b26] px-4 text-xs font-black uppercase tracking-widest text-[#f7768e] shadow active:scale-95 active:bg-[#f7768e] active:text-[#05070a]"
           onPointerDown={(event) => {
             event.preventDefault();
             resetGame();
@@ -176,6 +178,6 @@ export default function GameCanvas() {
           Restart
         </button>
       </div>
-    </>
+    </div>
   );
 }

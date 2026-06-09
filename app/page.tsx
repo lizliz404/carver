@@ -36,7 +36,7 @@ export default function Page() {
 
             {/* Game Canvas Container */}
             <div className="w-full bg-[#1a1b26] border-2 border-[#414868] relative shadow-[0_0_50px_rgba(0,0,0,0.5)] flex items-center justify-center p-2 lg:p-4">
-              <div className="w-full aspect-video relative">
+              <div className="relative h-[min(72dvh,620px)] min-h-[430px] w-full sm:h-auto sm:aspect-video sm:min-h-0">
                  <GameCanvas />
               </div>
             </div>
