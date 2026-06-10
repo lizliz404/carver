@@ -22,8 +22,8 @@ export const metadata: Metadata = {
     "mobile puzzle game",
   ],
   applicationName: siteName,
-  creator: "Pixel Logic Solutions",
-  publisher: "Pixel Logic Solutions",
+  creator: siteName,
+  publisher: siteName,
   alternates: {
     canonical: "/",
   },

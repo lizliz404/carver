@@ -37,6 +37,32 @@ test('blocked moves leave the player and tile state unchanged', () => {
   assert.equal(engine.state.sliding, null);
 });
 
+test('input returns inactive after the game has already ended', () => {
+  const engine = new GameEngine([
+    '#####',
+    '#@$ #',
+    '#####',
+  ]);
+
+  engine.input('RIGHT');
+  const result = engine.input('LEFT');
+
+  assert.equal(result, 'INACTIVE');
+  assert.equal(engine.state.won, true);
+  assert.deepEqual(engine.state.player, { x: 2, y: 1 });
+});
+
+test('resetting with a new engine restores the original tile state', () => {
+  const engine = new GameEngine(STARTING_LEVEL);
+
+  engine.input('RIGHT');
+  const resetEngine = new GameEngine(STARTING_LEVEL);
+
+  assert.equal(engine.state.grid[1][1], 'ICE');
+  assert.equal(resetEngine.state.grid[1][1], 'DIRT');
+  assert.deepEqual(resetEngine.state.player, { x: 1, y: 1 });
+});
+
 test('sliding onto the goal wins the level', () => {
   const engine = new GameEngine([
     '#####',

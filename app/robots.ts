@@ -3,7 +3,6 @@ import type { MetadataRoute } from 'next';
 export const dynamic = 'force-static';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://carver.pages.dev';
-const siteHost = new URL(siteUrl).host;
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -12,6 +11,5 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
     },
     sitemap: `${siteUrl}/sitemap.xml`,
-    host: siteHost,
   };
 }

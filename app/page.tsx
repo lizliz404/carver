@@ -49,7 +49,7 @@ export default function Page() {
         {/* Play Area */}
         <section className="flex-1 overflow-y-auto bg-[#0a0c10] relative overscroll-contain">
           {/* Grid Background */}
-          <div className="fixed inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#414868 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
+          <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#414868 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
           
           <div className="relative z-10 mx-auto flex min-h-full w-full max-w-2xl flex-col items-center justify-center gap-6 px-4 py-6 md:py-8">
             
