@@ -1,5 +1,6 @@
 export type Tile = 'DIRT' | 'ICE' | 'WALL' | 'GOAL';
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
+export type MoveResult = 'MOVED' | 'BLOCKED' | 'INACTIVE';
 
 export interface Position {
   x: number;
@@ -50,19 +51,23 @@ export class GameEngine {
     return { grid, player, sliding: null, won: false, dead: false, cols, rows };
   }
 
-  public input(dir: Direction) {
-    if (this.state.won || this.state.dead || this.state.sliding) return;
+  public input(dir: Direction): MoveResult {
+    if (this.state.won || this.state.dead || this.state.sliding) return 'INACTIVE';
 
     const currentTile = this.state.grid[this.state.player.y][this.state.player.x];
     
-    // Can only initiate movement from DIRT
-    if (currentTile !== 'DIRT') return;
+    if (currentTile !== 'DIRT') return 'BLOCKED';
+
+    const nextPosition = this.getNextPosition(dir);
+    if (!this.isInBounds(nextPosition.x, nextPosition.y)) return 'BLOCKED';
+    if (this.state.grid[nextPosition.y][nextPosition.x] === 'WALL') return 'BLOCKED';
 
     // Moving means we leave DIRT, returning it to ICE
     this.state.grid[this.state.player.y][this.state.player.x] = 'ICE';
     
     this.state.sliding = dir;
     this.step();
+    return 'MOVED';
   }
 
   public tick() {
@@ -74,14 +79,7 @@ export class GameEngine {
   private step() {
     if (!this.state.sliding) return;
 
-    let dx = 0, dy = 0;
-    if (this.state.sliding === 'UP') dy = -1;
-    if (this.state.sliding === 'DOWN') dy = 1;
-    if (this.state.sliding === 'LEFT') dx = -1;
-    if (this.state.sliding === 'RIGHT') dx = 1;
-
-    const nx = this.state.player.x + dx;
-    const ny = this.state.player.y + dy;
+    const { x: nx, y: ny } = this.getNextPosition(this.state.sliding);
 
     // Out of bounds
     if (ny < 0 || ny >= this.state.rows || nx < 0 || nx >= this.state.cols) {
@@ -119,5 +117,19 @@ export class GameEngine {
     }
 
     // Otherwise it's ICE, we keep sliding next tick
+  }
+
+  private getNextPosition(dir: Direction): Position {
+    let dx = 0, dy = 0;
+    if (dir === 'UP') dy = -1;
+    if (dir === 'DOWN') dy = 1;
+    if (dir === 'LEFT') dx = -1;
+    if (dir === 'RIGHT') dx = 1;
+
+    return { x: this.state.player.x + dx, y: this.state.player.y + dy };
+  }
+
+  private isInBounds(x: number, y: number): boolean {
+    return y >= 0 && y < this.state.rows && x >= 0 && x < this.state.cols;
   }
 }

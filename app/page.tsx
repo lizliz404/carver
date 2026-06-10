@@ -24,7 +24,7 @@ const gameSchema = {
 
 export default function Page() {
   return (
-    <main className="h-[100dvh] w-full flex flex-col bg-[#05070a] text-[#c0caf5] font-mono overflow-hidden select-none">
+    <main className="h-[100dvh] w-full flex flex-col bg-[#05070a] text-[#c0caf5] font-mono overflow-hidden">
       <Script
         id="carver-video-game-schema"
         type="application/ld+json"
@@ -35,11 +35,11 @@ export default function Page() {
       <header className="h-12 border-b border-[#24283b] flex items-center justify-between px-6 bg-[#16161e] shrink-0">
         <div className="flex items-center space-x-4">
           <div className="w-3 h-3 rounded-full bg-[#f7768e]"></div>
-          <span className="text-xs font-bold tracking-widest text-[#7aa2f7]">CARVER // PROTOCOL_ACTIVE</span>
+          <span className="text-xs font-bold tracking-widest text-[#7aa2f7]">CARVER</span>
         </div>
         <div className="flex space-x-8 text-[10px] text-[#565f89]">
-          <span className="hidden sm:inline">SYSTEM: FROST</span>
-          <span>FPS: 60.0</span>
+          <span className="hidden sm:inline">FREE BROWSER PUZZLE</span>
+          <span>NO SIGNUP</span>
         </div>
       </header>
 
@@ -65,7 +65,7 @@ export default function Page() {
                 </p>
               </div>
               <div className="text-[#565f89] flex shrink-0 items-center gap-2 text-xs uppercase tracking-widest bg-[#1a1b26] px-3 py-1 border border-[#24283b]">
-                Execute Mode
+                Puzzle Mode
               </div>
             </div>
 
@@ -141,36 +141,17 @@ export default function Page() {
 
           <div className="space-y-4">
             <h2 className="text-[#bb9af7] text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
-               Constraints
+              Route Notes
             </h2>
-            <div className="space-y-2 font-mono text-[9px]">
-              <div className="flex justify-between border-b border-[#24283b] pb-2">
-                <span className="text-[#565f89]">Core Mechanic</span>
-                <span className="text-[#c0caf5]">Path-to-Ice State Toggle</span>
-              </div>
-              <div className="flex justify-between border-b border-[#24283b] pb-2">
-                <span className="text-[#565f89]">Architecture</span>
-                <span className="text-[#c0caf5]">Pure Canvas 2D</span>
-              </div>
-              <div className="flex justify-between border-b border-[#24283b] pb-2">
-                <span className="text-[#565f89]">Design Principle</span>
-                <span className="text-[#c0caf5]">KISS / DRY / SOLID</span>
-              </div>
-              <div className="flex justify-between pt-1">
-                <span className="text-[#565f89]">Novelty Check</span>
-                <span className="text-[#c0caf5] flex items-center gap-1">Pass </span>
-              </div>
-              <div className="text-right text-[#565f89]">Not Sokoban, Not Match-3, 0 RNG.</div>
+            <div className="space-y-3 text-[11px] leading-relaxed text-[#9aa5ce]">
+              <p>Every move spends one stopping point. If a direction is blocked, choose another route or restart.</p>
+              <p>Good routes keep enough dirt ahead to slow down before the board turns into ice.</p>
             </div>
           </div>
           
           <div className="p-4 border border-dashed border-[#414868] bg-[#1a1b26] mt-auto">
-            <div className="text-[9px] text-[#565f89] mb-2 uppercase tracking-widest">Status</div>
-            <ul className="text-[9px] space-y-2 text-[#717cb4]">
-              <li className="flex items-start"><span className="mr-2 text-[#9ece6a]">✓</span> DRY: Grid State Matrix</li>
-              <li className="flex items-start"><span className="mr-2 text-[#9ece6a]">✓</span> KISS: Single Key Output</li>
-              <li className="flex items-start"><span className="mr-2 text-[#9ece6a]">✓</span> SoC: Render & State Split</li>
-            </ul>
+            <div className="text-[9px] text-[#565f89] mb-2 uppercase tracking-widest">Tip</div>
+            <p className="text-[10px] leading-relaxed text-[#717cb4]">The shortest-looking path is often a trap. Leave yourself one clean stop before the goal.</p>
           </div>
 
         </aside>
@@ -187,7 +168,7 @@ export default function Page() {
           </div>
         </div>
         <div className="ml-auto text-[9px] text-[#414868]">
-          © 2026 PIXEL_LOGIC_SOLUTIONS
+          © 2026 CARVER
         </div>
       </footer>
     </main>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { GameEngine, Direction } from '../lib/game/engine';
+import { GameEngine, Direction, MoveResult } from '../lib/game/engine';
 import { STARTING_LEVEL, createGameEngine } from '../lib/game/levels';
 import { Renderer } from '../lib/game/renderer';
 
@@ -25,9 +25,9 @@ export default function GameCanvas() {
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const inputFeedbackTimerRef = useRef<number | null>(null);
   const [status, setStatus] = useState('IDLE');
-  const [lastInput, setLastInput] = useState<Direction | 'RESET' | null>(null);
+  const [lastInput, setLastInput] = useState<Direction | 'RESET' | 'BLOCKED' | null>(null);
 
-  const flashInput = useCallback((input: Direction | 'RESET') => {
+  const flashInput = useCallback((input: Direction | 'RESET' | 'BLOCKED') => {
     if (inputFeedbackTimerRef.current) window.clearTimeout(inputFeedbackTimerRef.current);
     setLastInput(input);
     inputFeedbackTimerRef.current = window.setTimeout(() => setLastInput(null), 180);
@@ -40,8 +40,8 @@ export default function GameCanvas() {
   }, [flashInput]);
 
   const move = useCallback((dir: Direction) => {
-    engineRef.current?.input(dir);
-    flashInput(dir);
+    const result: MoveResult | undefined = engineRef.current?.input(dir);
+    flashInput(result === 'MOVED' ? dir : 'BLOCKED');
   }, [flashInput]);
 
   useEffect(() => {
@@ -150,8 +150,8 @@ export default function GameCanvas() {
         </div>
         {lastInput ? (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="rounded-full border border-[#7aa2f7]/70 bg-[#05070a]/75 px-5 py-2 text-xs font-black uppercase tracking-[0.35em] text-[#c0caf5] shadow-[0_0_28px_rgba(122,162,247,0.35)] animate-pulse">
-              {lastInput === 'RESET' ? 'Reset' : `Move ${lastInput}`}
+            <div className={`rounded-full border bg-[#05070a]/75 px-5 py-2 text-xs font-black uppercase tracking-[0.35em] text-[#c0caf5] shadow-[0_0_28px_rgba(122,162,247,0.35)] animate-pulse ${lastInput === 'BLOCKED' ? 'border-[#f7768e]/70' : 'border-[#7aa2f7]/70'}`}>
+              {lastInput === 'RESET' ? 'Reset' : lastInput === 'BLOCKED' ? 'Blocked' : `Move ${lastInput}`}
             </div>
           </div>
         ) : null}
@@ -159,7 +159,7 @@ export default function GameCanvas() {
       <div className="flex shrink-0 items-end justify-between gap-3 sm:hidden">
         <div className="rounded-xl border border-[#414868] bg-[#05070a] p-2 shadow-[0_0_24px_rgba(0,0,0,0.35)]">
           <div className="mb-1 text-center text-[9px] font-bold uppercase tracking-widest text-[#7aa2f7]">Tap / Swipe</div>
-          <div className="grid touch-none select-none grid-cols-3 grid-rows-2 gap-2" aria-label="Touch movement controls">
+          <div className="grid touch-none grid-cols-3 grid-rows-2 gap-2" aria-label="Touch movement controls">
             {DIRECTIONS.map(({ label, dir, className }) => (
               <button
                 key={dir}
