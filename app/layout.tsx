@@ -4,12 +4,12 @@ import "./globals.css";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://carver.pages.dev";
 const siteName = "Carver";
 const description =
-  "Play Carver, a free browser puzzle game where every move changes the board: step off dirt, turn it into ice, slide with care, and carve a path to the goal.";
+  "Play Carver, a free browser puzzle game about irreversible damage becoming infrastructure: carve dirt into ice, use void scars as braces, and find a path to the goal.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Carver — Free Browser Ice Sliding Puzzle Game",
+    default: "Carver — Damage Becomes Infrastructure",
     template: "%s | Carver",
   },
   description,
@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     "Carver game",
     "browser puzzle game",
     "ice sliding puzzle",
+    "irreversible puzzle game",
     "pixel puzzle game",
     "free web game",
     "mobile puzzle game",
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Carver — Free Browser Ice Sliding Puzzle Game",
+    title: "Carver — Damage Becomes Infrastructure",
     description,
     url: "/",
     siteName,
@@ -44,7 +45,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Carver — Free Browser Ice Sliding Puzzle Game",
+    title: "Carver — Damage Becomes Infrastructure",
     description,
     images: ["/og-image.png"],
   },

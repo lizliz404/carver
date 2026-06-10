@@ -153,6 +153,20 @@ export class Renderer {
           const shimmer = Math.sin(t * 0.03 + x * 1.5 + y * 0.7) * 0.05 + 0.17;
           this.ctx.fillStyle = `rgba(122, 162, 247, ${shimmer})`;
           this.ctx.fillRect(px + 2, py + 2, this.tileSize - 4, this.tileSize - 4);
+        } else if (tile === "VOID") {
+          this.ctx.fillStyle = "#05070a";
+          this.ctx.fillRect(px, py, this.tileSize, this.tileSize);
+          this.ctx.strokeStyle = "#f7768e";
+          this.ctx.lineWidth = 2;
+          this.ctx.strokeRect(px + 4, py + 4, this.tileSize - 8, this.tileSize - 8);
+          this.ctx.strokeStyle = "rgba(247, 118, 142, 0.65)";
+          this.ctx.lineWidth = 1;
+          this.ctx.beginPath();
+          this.ctx.moveTo(px + 8, py + 8);
+          this.ctx.lineTo(px + this.tileSize - 8, py + this.tileSize - 8);
+          this.ctx.moveTo(px + this.tileSize - 8, py + 8);
+          this.ctx.lineTo(px + 8, py + this.tileSize - 8);
+          this.ctx.stroke();
         } else if (tile === "GOAL") {
           // Pulsing goal
           const pulse = Math.sin(t * 0.02) * 0.15 + 0.85;

@@ -12,7 +12,7 @@ const gameSchema = {
   gamePlatform: ['Web browser', 'Mobile browser', 'Desktop browser'],
   genre: ['Puzzle', 'Logic game', 'Sliding puzzle'],
   description:
-    'Carver is a free browser puzzle game where every move changes the board: step off dirt to turn it into ice, slide across frozen tiles, and carve a safe route to the goal.',
+    'Carver is a free browser puzzle game where every move changes the board: step off dirt to turn it into ice, slide across frozen tiles, and use void scars as braces that turn old damage into future control.',
   playMode: 'SinglePlayer',
   operatingSystem: 'Any',
   offers: {

@@ -1,6 +1,7 @@
 {
   "name": "carver",
   "version": "0.1.0",
+  "description": "A browser puzzle game about irreversible damage becoming infrastructure.",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,7 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test --experimental-strip-types tests/*.test.ts",
     "check": "npm run lint && npm run typecheck && npm run test",
-    "clean": "next clean"
+    "clean": "rm -rf .next out tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "@iconify-json/heroicons": "^1.2.3",

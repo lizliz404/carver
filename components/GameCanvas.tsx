@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { GameEngine, Direction, MoveResult } from "../lib/game/engine";
-import { STARTING_LEVEL, createGameEngine } from "../lib/game/levels";
+import { LEVELS, STARTING_LEVEL, createGameEngine } from "../lib/game/levels";
 import { Renderer } from "../lib/game/renderer";
 import { SFX, unlockAudio } from "../lib/game/audio";
 
@@ -25,30 +25,42 @@ export default function GameCanvas() {
   const rendererRef = useRef<Renderer | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const inputFeedbackTimerRef = useRef<number | null>(null);
-  const prevStatusRef = useRef<string>("IDLE");
   const slideTimerRef = useRef<number>(0);
+  const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [status, setStatus] = useState("IDLE");
-  const [lastInput, setLastInput] = useState<Direction | "RESET" | "BLOCKED" | null>(null);
+  const [lastInput, setLastInput] = useState<Direction | "RESET" | "BLOCKED" | "NEXT" | null>(null);
 
-  const flashInput = useCallback((input: Direction | "RESET" | "BLOCKED") => {
+  const loadLevel = useCallback((levelIndex: number) => {
+    const nextLevel = LEVELS[levelIndex] ?? LEVELS[0];
+    engineRef.current = createGameEngine(nextLevel);
+    setCurrentLevelIndex(levelIndex);
+    setStatus("READY");
+  }, []);
+
+  const flashInput = useCallback((input: Direction | "RESET" | "BLOCKED" | "NEXT") => {
     if (inputFeedbackTimerRef.current) window.clearTimeout(inputFeedbackTimerRef.current);
     setLastInput(input);
     inputFeedbackTimerRef.current = window.setTimeout(() => setLastInput(null), 180);
   }, []);
 
   const resetGame = useCallback(() => {
-    engineRef.current = createGameEngine();
-    setStatus("READY");
+    loadLevel(currentLevelIndex);
     flashInput("RESET");
     SFX.restart();
-  }, [flashInput]);
+  }, [currentLevelIndex, flashInput, loadLevel]);
+
+  const nextLevel = useCallback(() => {
+    const nextIndex = Math.min(currentLevelIndex + 1, LEVELS.length - 1);
+    loadLevel(nextIndex);
+    flashInput("NEXT");
+    SFX.restart();
+  }, [currentLevelIndex, flashInput, loadLevel]);
 
   const move = useCallback(
     (dir: Direction) => {
       const engine = engineRef.current;
       if (!engine) return;
 
-      const playerPos = { ...engine.state.player };
       const result: MoveResult | undefined = engine.input(dir);
 
       if (result === "MOVED") {
@@ -93,7 +105,7 @@ export default function GameCanvas() {
 
     window.addEventListener("resize", resize);
 
-    engineRef.current = new GameEngine(STARTING_LEVEL);
+    engineRef.current = new GameEngine(LEVELS[currentLevelIndex] ?? STARTING_LEVEL);
     rendererRef.current = new Renderer(canvas);
     resize();
 
@@ -177,7 +189,7 @@ export default function GameCanvas() {
       cancelAnimationFrame(af);
       if (inputFeedbackTimerRef.current) window.clearTimeout(inputFeedbackTimerRef.current);
     };
-  }, []);
+  }, [currentLevelIndex]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -228,6 +240,9 @@ export default function GameCanvas() {
           aria-label="Carver game board. Swipe or use the on-screen direction buttons to move."
         />
         <div className="pointer-events-none absolute right-3 top-3 rounded border border-[#24283b] bg-[#1a1b26]/95 px-2 py-1 font-mono text-xs font-bold text-[#c0caf5]">
+          <span className="mr-2 text-[#565f89]">
+            LEVEL {currentLevelIndex + 1}/{LEVELS.length}
+          </span>
           <span>{status}</span>
           {lastInput ? (
             <span className="ml-2 text-[#7aa2f7]">
@@ -235,6 +250,42 @@ export default function GameCanvas() {
             </span>
           ) : null}
         </div>
+        {status === "YOU WIN" ? (
+          <div className="absolute inset-x-4 bottom-4 rounded border border-[#9ece6a]/60 bg-[#05070a]/92 px-4 py-3 text-center shadow-[0_0_30px_rgba(158,206,106,0.18)]">
+            <div className="font-mono text-[10px] font-black uppercase tracking-[0.3em] text-[#9ece6a]">
+              {currentLevelIndex === LEVELS.length - 1 ? "All levels complete" : "Level clear"}
+            </div>
+            <p className="mt-1 text-xs font-semibold text-[#c0caf5]">
+              Level {currentLevelIndex + 1}/{LEVELS.length} cleared.
+            </p>
+            <div className="mt-3 flex justify-center gap-2">
+              {currentLevelIndex < LEVELS.length - 1 ? (
+                <button
+                  type="button"
+                  className="rounded border border-[#9ece6a]/70 bg-[#9ece6a]/15 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-[#9ece6a] transition hover:bg-[#9ece6a] hover:text-[#05070a]"
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    unlockAudio();
+                    nextLevel();
+                  }}
+                >
+                  Next Level
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="rounded border border-[#414868] bg-[#1a1b26] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-[#c0caf5] transition hover:border-[#7aa2f7]"
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  unlockAudio();
+                  resetGame();
+                }}
+              >
+                Replay
+              </button>
+            </div>
+          </div>
+        ) : null}
         {lastInput ? (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div

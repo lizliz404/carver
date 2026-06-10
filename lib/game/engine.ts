@@ -1,4 +1,4 @@
-export type Tile = 'DIRT' | 'ICE' | 'WALL' | 'GOAL';
+export type Tile = 'DIRT' | 'ICE' | 'VOID' | 'WALL' | 'GOAL';
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 export type MoveResult = 'MOVED' | 'BLOCKED' | 'INACTIVE';
 
@@ -37,6 +37,7 @@ export class GameEngine {
         if (char === '#') row.push('WALL');
         else if (char === '.') row.push('DIRT');
         else if (char === ' ') row.push('ICE');
+        else if (char === 'x') row.push('VOID');
         else if (char === '$') row.push('GOAL');
         else if (char === '@') {
           row.push('DIRT'); // Player spawns on dirt
@@ -60,7 +61,7 @@ export class GameEngine {
 
     const nextPosition = this.getNextPosition(dir);
     if (!this.isInBounds(nextPosition.x, nextPosition.y)) return 'BLOCKED';
-    if (this.state.grid[nextPosition.y][nextPosition.x] === 'WALL') return 'BLOCKED';
+    if (this.isBlockingTile(this.state.grid[nextPosition.y][nextPosition.x])) return 'BLOCKED';
 
     // Moving means we leave DIRT, returning it to ICE
     this.state.grid[this.state.player.y][this.state.player.x] = 'ICE';
@@ -90,8 +91,10 @@ export class GameEngine {
 
     const nextTile = this.state.grid[ny][nx];
 
-    if (nextTile === 'WALL') {
-      // Hit a wall: stop sliding
+    if (nextTile === 'WALL' || nextTile === 'VOID') {
+      if (nextTile === 'VOID') {
+        this.state.grid[this.state.player.y][this.state.player.x] = 'DIRT';
+      }
       this.state.sliding = null;
       // We are on whatever tile we were on previously. BUT wait: 
       // If we bumped into wall, we just stay at the previous tile and stop sliding.
@@ -131,5 +134,9 @@ export class GameEngine {
 
   private isInBounds(x: number, y: number): boolean {
     return y >= 0 && y < this.state.rows && x >= 0 && x < this.state.cols;
+  }
+
+  private isBlockingTile(tile: Tile): boolean {
+    return tile === 'WALL' || tile === 'VOID';
   }
 }
