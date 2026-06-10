@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { GameEngine, Direction, MoveResult } from "../lib/game/engine";
 import { LEVELS, STARTING_LEVEL, createGameEngine } from "../lib/game/levels";
 import { Renderer } from "../lib/game/renderer";
-import { SFX, unlockAudio } from "../lib/game/audio";
+import { BGM, SFX, unlockAudio } from "../lib/game/audio";
 
 const DIRECTIONS: Array<{ label: string; dir: Direction; className: string }> =
   [
@@ -34,6 +34,15 @@ export default function GameCanvas() {
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const inputFeedbackTimerRef = useRef<number | null>(null);
   const slideTimerRef = useRef<number>(0);
+  const bgmStartedRef = useRef(false);
+
+  const ensureBGM = useCallback(() => {
+    if (!bgmStartedRef.current) {
+      unlockAudio();
+      BGM.start();
+      bgmStartedRef.current = true;
+    }
+  }, []);
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [status, setStatus] = useState("IDLE");
   const [lastInput, setLastInput] = useState<
@@ -208,6 +217,10 @@ export default function GameCanvas() {
         else if (engine.state.sliding) setStatus("SLIDING");
         else setStatus("READY");
 
+        // BGM: brighter during sliding, dim otherwise
+        if (engine.state.sliding) BGM.setState("active");
+        else BGM.setState("idle");
+
         prevSliding = sliding;
         prevWon = won;
         prevDead = dead;
@@ -263,15 +276,15 @@ export default function GameCanvas() {
   return (
     <div
       className="flex h-full min-h-0 flex-col gap-3 sm:block"
-      onClick={unlockAudio}
-      onKeyDown={unlockAudio}
+      onClick={ensureBGM}
+      onKeyDown={ensureBGM}
     >
       <div className="relative min-h-0 flex-1 sm:h-full">
         <canvas
           ref={canvasRef}
           className="block h-full w-full touch-none"
           onPointerDown={(event) => {
-            unlockAudio();
+            ensureBGM();
             touchStartRef.current = { x: event.clientX, y: event.clientY };
           }}
           onPointerUp={(event) => {
