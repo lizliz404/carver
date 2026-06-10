@@ -33,11 +33,27 @@ export const metadata: Metadata = {
     url: "/",
     siteName,
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Carver ice sliding puzzle game icon",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Carver — Free Browser Ice Sliding Puzzle Game",
     description,
+    images: ["/og-image.png"],
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
   },
   robots: {
     index: true,
