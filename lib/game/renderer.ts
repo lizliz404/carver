@@ -1,4 +1,4 @@
-import { GameState } from "./engine";
+import { GameState, Direction } from "./engine";
 
 interface Particle {
   x: number;
@@ -20,6 +20,19 @@ interface Spark {
   size: number;
 }
 
+interface Hint {
+  col: number;
+  row: number;
+  dir: Direction;
+}
+
+const DIRECTION_ARROW: Record<Direction, string> = {
+  UP: "↑",
+  DOWN: "↓",
+  LEFT: "←",
+  RIGHT: "→",
+};
+
 export class Renderer {
   private ctx: CanvasRenderingContext2D;
   private width: number;
@@ -36,6 +49,13 @@ export class Renderer {
   private deathFlash = 0;
   private ox = 0;
   private oy = 0;
+  private tileChangeFlashes: Array<{
+    x: number;
+    y: number;
+    life: number;
+    from: string;
+    to: string;
+  }> = [];
 
   constructor(canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext("2d");
@@ -108,7 +128,11 @@ export class Renderer {
     this.victoryTime = 120;
   }
 
-  public draw(state: GameState, t: number) {
+  public draw(
+    state: GameState,
+    t: number,
+    hints: Hint[] | null = null,
+  ) {
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     this.ctx.imageSmoothingEnabled = false;
     this.ctx.clearRect(0, 0, this.width, this.height);
@@ -122,8 +146,12 @@ export class Renderer {
       this.shakeAmount *= this.shakeDecay;
     }
 
-    const ox = Math.floor((this.width - state.cols * this.tileSize) / 2) + sx;
-    const oy = Math.floor((this.height - state.rows * this.tileSize) / 2) + sy;
+    const ox = Math.floor(
+      (this.width - state.cols * this.tileSize) / 2,
+    ) + sx;
+    const oy = Math.floor(
+      (this.height - state.rows * this.tileSize) / 2,
+    ) + sy;
 
     this.ox = ox;
     this.oy = oy;
@@ -139,13 +167,29 @@ export class Renderer {
           this.ctx.fillStyle = "#24283b";
           this.ctx.fillRect(px, py, this.tileSize, this.tileSize);
           this.ctx.strokeStyle = "#414868";
+          this.ctx.lineWidth = 1;
           this.ctx.strokeRect(px, py, this.tileSize, this.tileSize);
+          // Wall inner detail
+          this.ctx.fillStyle = "#1f2335";
+          this.ctx.fillRect(px + 2, py + 2, this.tileSize - 4, this.tileSize - 4);
         } else if (tile === "DIRT") {
           this.ctx.fillStyle = "#1a1b26";
           this.ctx.fillRect(px, py, this.tileSize, this.tileSize);
           this.ctx.strokeStyle = "#9ece6a";
-          this.ctx.lineWidth = 1;
-          this.ctx.strokeRect(px + 4, py + 4, this.tileSize - 8, this.tileSize - 8);
+          this.ctx.lineWidth = 2;
+          this.ctx.strokeRect(px + 3, py + 3, this.tileSize - 6, this.tileSize - 6);
+          // Dirt grain texture
+          const grainCount = 5;
+          for (let g = 0; g < grainCount; g++) {
+            const gx = px + 5 + ((g * 7 + x * 3 + y * 11) % (this.tileSize - 10));
+            const gy = py + 5 + ((g * 13 + y * 7 + x * 5) % (this.tileSize - 10));
+            this.ctx.fillStyle = "rgba(158, 206, 106, 0.4)";
+            this.ctx.fillRect(gx, gy, 1.5, 1.5);
+          }
+          // Subtle inner glow
+          const dirtPulse = Math.sin(t * 0.015 + x * 0.5 + y * 0.5) * 0.04 + 0.06;
+          this.ctx.fillStyle = `rgba(158, 206, 106, ${dirtPulse})`;
+          this.ctx.fillRect(px + 4, py + 4, this.tileSize - 8, this.tileSize - 8);
         } else if (tile === "ICE") {
           this.ctx.fillStyle = "#16161e";
           this.ctx.fillRect(px, py, this.tileSize, this.tileSize);
@@ -153,13 +197,28 @@ export class Renderer {
           const shimmer = Math.sin(t * 0.03 + x * 1.5 + y * 0.7) * 0.05 + 0.17;
           this.ctx.fillStyle = `rgba(122, 162, 247, ${shimmer})`;
           this.ctx.fillRect(px + 2, py + 2, this.tileSize - 4, this.tileSize - 4);
+          // Ice crystal sparkles
+          const sparkleCount = 3;
+          for (let s = 0; s < sparkleCount; s++) {
+            const sx =
+              px + 4 + ((s * 11 + x * 7 + Math.floor(t * 0.01)) % (this.tileSize - 8));
+            const sy =
+              py + 4 + ((s * 17 + y * 13) % (this.tileSize - 8));
+            const sparkleAlpha =
+              Math.abs(Math.sin(t * 0.04 + s * 2.1 + x + y)) * 0.35;
+            this.ctx.fillStyle = `rgba(255, 255, 255, ${sparkleAlpha})`;
+            this.ctx.fillRect(sx, sy, 1, 1);
+          }
         } else if (tile === "VOID") {
           this.ctx.fillStyle = "#05070a";
           this.ctx.fillRect(px, py, this.tileSize, this.tileSize);
-          this.ctx.strokeStyle = "#f7768e";
+          // Pulsing red border
+          const voidPulse = Math.sin(t * 0.025 + x * 0.7) * 0.2 + 0.8;
+          this.ctx.strokeStyle = `rgba(247, 118, 142, ${voidPulse})`;
           this.ctx.lineWidth = 2;
           this.ctx.strokeRect(px + 4, py + 4, this.tileSize - 8, this.tileSize - 8);
-          this.ctx.strokeStyle = "rgba(247, 118, 142, 0.65)";
+          // X pattern
+          this.ctx.strokeStyle = `rgba(247, 118, 142, ${voidPulse * 0.65})`;
           this.ctx.lineWidth = 1;
           this.ctx.beginPath();
           this.ctx.moveTo(px + 8, py + 8);
@@ -167,6 +226,15 @@ export class Renderer {
           this.ctx.moveTo(px + this.tileSize - 8, py + 8);
           this.ctx.lineTo(px + 8, py + this.tileSize - 8);
           this.ctx.stroke();
+          // Inner dark void particles
+          for (let v = 0; v < 2; v++) {
+            const vx =
+              px + 6 + ((v * 19 + x * 13 + Math.floor(t * 0.015)) % (this.tileSize - 12));
+            const vy =
+              py + 6 + ((v * 23 + y * 17) % (this.tileSize - 12));
+            this.ctx.fillStyle = "rgba(247, 118, 142, 0.25)";
+            this.ctx.fillRect(vx, vy, 1.5, 1.5);
+          }
         } else if (tile === "GOAL") {
           // Pulsing goal
           const pulse = Math.sin(t * 0.02) * 0.15 + 0.85;
@@ -188,7 +256,12 @@ export class Renderer {
           this.ctx.shadowBlur = 10 + Math.sin(t * 0.03) * 5;
           this.ctx.strokeStyle = "rgba(187, 154, 247, 0.5)";
           this.ctx.lineWidth = 2;
-          this.ctx.strokeRect(px + 1, py + 1, this.tileSize - 2, this.tileSize - 2);
+          this.ctx.strokeRect(
+            px + 1,
+            py + 1,
+            this.tileSize - 2,
+            this.tileSize - 2,
+          );
           this.ctx.shadowBlur = 0;
         }
       }
@@ -199,25 +272,21 @@ export class Renderer {
     const ppy = oy + state.player.y * this.tileSize + this.tileSize / 2;
 
     if (state.sliding) {
-      this.slideTrail.push({ x: ppx, y: ppy, alpha: 0.6 });
+      this.slideTrail.push({ x: ppx, y: ppy, alpha: 0.7 });
     } else {
-      // Fade trail quickly when not sliding
       if (this.slideTrail.length > 0) {
         this.slideTrail = [];
       }
     }
 
-    // Limit trail length
     if (this.slideTrail.length > 30) {
       this.slideTrail = this.slideTrail.slice(-30);
     }
 
-    // Fade trail
     for (let i = 0; i < this.slideTrail.length; i++) {
-      this.slideTrail[i].alpha *= 0.92;
+      this.slideTrail[i].alpha *= 0.9;
     }
 
-    // Draw trail
     for (let i = 1; i < this.slideTrail.length; i++) {
       const prev = this.slideTrail[i - 1];
       const curr = this.slideTrail[i];
@@ -231,19 +300,69 @@ export class Renderer {
     }
 
     // --- Draw player ---
-    this.ctx.shadowColor = state.dead ? "#f7768e" : state.won ? "#9ece6a" : "#7aa2f7";
-    this.ctx.shadowBlur = state.sliding ? 16 : 8;
-    this.ctx.fillStyle = state.dead ? "#f7768e" : state.won ? "#9ece6a" : "#c0caf5";
+    this.ctx.shadowColor = state.dead
+      ? "#f7768e"
+      : state.won
+        ? "#9ece6a"
+        : state.sliding
+          ? "#7aa2f7"
+          : "#c0caf5";
+    this.ctx.shadowBlur = state.sliding ? 18 : 10;
+    this.ctx.fillStyle = state.dead
+      ? "#f7768e"
+      : state.won
+        ? "#9ece6a"
+        : "#c0caf5";
+
+    // Player bounce when not sliding
+    const bounce = state.sliding
+      ? 0
+      : Math.sin(t * 0.08) * 2;
+
     this.ctx.beginPath();
-    this.ctx.arc(ppx, ppy, this.tileSize * 0.3, 0, Math.PI * 2);
+    this.ctx.arc(
+      ppx,
+      ppy + bounce,
+      this.tileSize * 0.32,
+      0,
+      Math.PI * 2,
+    );
     this.ctx.fill();
 
     // Player inner glow
     this.ctx.shadowBlur = 0;
-    this.ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+    this.ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
     this.ctx.beginPath();
-    this.ctx.arc(ppx, ppy, this.tileSize * 0.15, 0, Math.PI * 2);
+    this.ctx.arc(
+      ppx,
+      ppy + bounce,
+      this.tileSize * 0.15,
+      0,
+      Math.PI * 2,
+    );
     this.ctx.fill();
+
+    // Player outer ring (direction indicator when not sliding)
+    if (!state.sliding && !state.won && !state.dead) {
+      this.ctx.strokeStyle = "rgba(192, 202, 245, 0.2)";
+      this.ctx.lineWidth = 1.5;
+      this.ctx.beginPath();
+      this.ctx.arc(
+        ppx,
+        ppy + bounce,
+        this.tileSize * 0.38,
+        0,
+        Math.PI * 2,
+      );
+      this.ctx.stroke();
+    }
+
+    // --- Tutorial hints ---
+    if (hints && hints.length > 0) {
+      for (const hint of hints) {
+        this.drawTutorialHint(hint, ox, oy, t);
+      }
+    }
 
     // --- Draw particles ---
     for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -289,22 +408,59 @@ export class Renderer {
 
     // --- Victory overlay ---
     if (this.victoryTime > 0) {
-      // Radial pulse
       const vAlpha = Math.min(1, this.victoryTime / 60) * 0.2;
       this.ctx.fillStyle = `rgba(158, 206, 106, ${vAlpha})`;
       this.ctx.fillRect(0, 0, this.width, this.height);
 
-      // Victory ring
       const ringPulse = Math.sin(t * 0.05) * 8;
       this.ctx.strokeStyle = "rgba(158, 206, 106, 0.6)";
       this.ctx.lineWidth = 2;
       this.ctx.beginPath();
-      this.ctx.arc(ppx, ppy, this.tileSize * 0.6 + ringPulse, 0, Math.PI * 2);
+      this.ctx.arc(
+        ppx,
+        ppy,
+        this.tileSize * 0.6 + ringPulse,
+        0,
+        Math.PI * 2,
+      );
       this.ctx.stroke();
 
       this.victoryTime--;
     }
 
     this.lastPlayerPos = { x: state.player.x, y: state.player.y };
+  }
+
+  private drawTutorialHint(
+    hint: Hint,
+    ox: number,
+    oy: number,
+    t: number,
+  ) {
+    const cx = ox + hint.col * this.tileSize + this.tileSize / 2;
+    const cy = oy + hint.row * this.tileSize + this.tileSize / 2;
+
+    // Pulsing circle behind arrow
+    const pulse = Math.sin(t * 0.04) * 0.15 + 0.55;
+    this.ctx.fillStyle = `rgba(122, 162, 247, ${pulse})`;
+    this.ctx.beginPath();
+    this.ctx.arc(cx, cy, this.tileSize * 0.45, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // Arrow
+    const bounce = Math.sin(t * 0.06) * 3;
+    let arrowX = cx;
+    let arrowY = cy + bounce;
+
+    if (hint.dir === "RIGHT") arrowX = cx + this.tileSize * 0.15 + bounce;
+    if (hint.dir === "LEFT") arrowX = cx - this.tileSize * 0.15 - bounce;
+    if (hint.dir === "UP") arrowY = cy - this.tileSize * 0.15 - bounce;
+    if (hint.dir === "DOWN") arrowY = cy + this.tileSize * 0.15 + bounce;
+
+    this.ctx.fillStyle = "#ffffff";
+    this.ctx.font = `bold ${Math.floor(this.tileSize * 0.55)}px monospace`;
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "middle";
+    this.ctx.fillText(DIRECTION_ARROW[hint.dir], arrowX, arrowY);
   }
 }

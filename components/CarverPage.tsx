@@ -22,8 +22,7 @@ const helpIcon = {
 type Locale = "en" | "zh";
 
 type Copy = {
-  intro: string;
-  goalLine: string;
+  tagline: string;
   controls: {
     move: string;
     undo: string;
@@ -39,10 +38,7 @@ type Copy = {
 
 const copy: Record<Locale, Copy> = {
   en: {
-    intro:
-      "Carver is a free browser puzzle game about irreversible movement. Move with WASD, arrow keys, swipe, or the touch buttons. Each step off dirt turns that tile into ice; sliding over old ice breaks it into void. Old damage can still become infrastructure: void scars can brace a slide and give you footing again.",
-    goalLine:
-      "Reach the green goal. Dirt stops you, ice spends itself, void scars can brace you. Press U/Z to undo or R to restart.",
+    tagline: "A puzzle game about irreversible movement. Just press → to start.",
     controls: {
       move: "Move",
       undo: "Undo",
@@ -85,10 +81,7 @@ const copy: Record<Locale, Copy> = {
     tip: "Do not only preserve clean ground. Sometimes the right move is to aim at the wound and make it hold you.",
   },
   zh: {
-    intro:
-      "Carver 是一款关于不可逆移动的免费浏览器解谜游戏。用 WASD、方向键、滑动或触控按钮移动。每次离开泥地，它都会变成冰面；再次滑过旧冰会把它压成 Void。但旧损伤也能变成结构：Void 伤痕可以挡住滑行，并让你重新获得落脚点。",
-    goalLine:
-      "到达绿色终点。泥地能停住你，冰面会被消耗，Void 伤痕也能当支点。按 U/Z 撤回，按 R 重开。",
+    tagline: "一款关于不可逆移动的解谜游戏。按 → 即可开始。",
     controls: {
       move: "移动",
       undo: "撤回",
@@ -163,20 +156,10 @@ export default function CarverPage() {
     };
   }, [isHelpOpen]);
 
-  const bodyTextClass =
+  const taglineClass =
     locale === "zh"
-      ? "font-sans text-[13px] leading-7 font-medium"
-      : "text-sm leading-6";
-
-  const goalClass =
-    locale === "zh" ? "font-sans text-xs font-semibold" : "text-[11px]";
-
-  const sidebarTextClass =
-    locale === "zh"
-      ? "font-sans text-[12px] leading-relaxed font-medium"
-      : "text-[11px] leading-relaxed";
-
-  const sidebarLabelClass = locale === "zh" ? "font-sans font-bold" : "";
+      ? "font-sans text-[12px] font-semibold"
+      : "text-[11px]";
 
   return (
     <main className="h-[100dvh] w-full flex flex-col bg-[#05070a] text-[#c0caf5] font-mono overflow-hidden">
@@ -207,7 +190,9 @@ export default function CarverPage() {
               onClick={() => setIsHelpOpen((open) => !open)}
               onFocus={() => setIsHelpOpen(true)}
               className="inline-flex h-9 w-9 items-center justify-center border border-[#414868] bg-[#1a1b26] font-mono text-sm font-black text-[#c0caf5] transition hover:border-[#7aa2f7] hover:text-[#7aa2f7]"
-              aria-label={locale === "en" ? "Open how to play" : "打开玩法说明"}
+              aria-label={
+                locale === "en" ? "Open how to play" : "打开玩法说明"
+              }
               aria-expanded={isHelpOpen}
               aria-controls="how-to-play-popover"
             >
@@ -233,7 +218,9 @@ export default function CarverPage() {
                     type="button"
                     onClick={() => setIsHelpOpen(false)}
                     className="inline-flex h-7 w-7 items-center justify-center border border-[#414868] bg-[#1a1b26] font-mono text-sm font-black text-[#c0caf5] transition hover:border-[#f7768e] hover:text-[#f7768e]"
-                    aria-label={locale === "en" ? "Close help" : "关闭玩法说明"}
+                    aria-label={
+                      locale === "en" ? "Close help" : "关闭玩法说明"
+                    }
                   >
                     ×
                   </button>
@@ -245,10 +232,8 @@ export default function CarverPage() {
                       <span className={`${rule.color} mt-1 text-[10px]`}>
                         ■
                       </span>
-                      <div className={`text-[#9aa5ce] ${sidebarTextClass}`}>
-                        <strong
-                          className={`text-[#c0caf5] ${sidebarLabelClass}`}
-                        >
+                      <div className="text-[#9aa5ce] text-[11px] leading-relaxed">
+                        <strong className="text-[#c0caf5]">
                           {rule.label}
                         </strong>{" "}
                         {rule.text}
@@ -261,9 +246,7 @@ export default function CarverPage() {
                   <div className="mb-2 text-[9px] uppercase tracking-widest text-[#565f89]">
                     {text.tipLabel}
                   </div>
-                  <p
-                    className={`text-[#717cb4] ${locale === "zh" ? "font-sans text-[11px] leading-relaxed font-medium" : "text-[10px] leading-relaxed"}`}
-                  >
+                  <p className="text-[#717cb4] text-[10px] leading-relaxed">
                     {text.tip}
                   </p>
                 </div>
@@ -286,22 +269,17 @@ export default function CarverPage() {
           <div
             className="absolute inset-0 opacity-10 pointer-events-none"
             style={{
-              backgroundImage: "radial-gradient(#414868 1px, transparent 1px)",
+              backgroundImage:
+                "radial-gradient(#414868 1px, transparent 1px)",
               backgroundSize: "32px 32px",
             }}
           />
 
-          <div className="relative z-10 mx-auto flex min-h-full w-full max-w-2xl flex-col items-center justify-center gap-6 px-4 py-6 md:py-8">
-            <div className="w-full">
-              <p className={`max-w-[34rem] text-[#9aa5ce] ${bodyTextClass}`}>
-                {text.intro}
-              </p>
-              <p
-                className={`mt-2 max-w-[34rem] uppercase tracking-widest text-[#7aa2f7] ${goalClass}`}
-              >
-                {text.goalLine}
-              </p>
-            </div>
+          <div className="relative z-10 mx-auto flex min-h-full w-full max-w-2xl flex-col items-center justify-center gap-4 px-4 py-4 md:py-6">
+            {/* One-liner tagline */}
+            <p className={`max-w-[34rem] text-center uppercase tracking-[0.15em] text-[#565f89] ${taglineClass}`}>
+              {text.tagline}
+            </p>
 
             <div className="w-full bg-[#1a1b26] border-2 border-[#414868] relative shadow-[0_0_50px_rgba(0,0,0,0.5)] flex items-center justify-center p-2 lg:p-4">
               <div className="relative h-[min(72dvh,620px)] min-h-[430px] w-full sm:h-auto sm:aspect-video sm:min-h-0">

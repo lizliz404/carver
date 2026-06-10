@@ -18,8 +18,7 @@ test("parses the starting level into a ready game state", () => {
   assert.equal(engine.state.rows, 3);
   assert.equal(engine.state.cols, 7);
   assert.deepEqual(engine.state.player, { x: 1, y: 1 });
-  assert.equal(engine.state.grid[1][2], "DIRT");
-  assert.equal(engine.state.grid[1][4], "GOAL");
+  assert.equal(engine.state.grid[1][5], "GOAL");
   assert.equal(engine.state.won, false);
   assert.equal(engine.state.dead, false);
 });
@@ -132,14 +131,16 @@ test("sliding into void stops before it and creates new footing", () => {
   assert.equal(engine.state.grid[1][3], "VOID");
 });
 
-test("handmade levels are all solvable by their intended routes", () => {
+test("all 8 handmade levels are solvable by their intended routes", () => {
   const routes: Direction[][] = [
-    ["RIGHT", "RIGHT"],
-    ["RIGHT", "RIGHT"],
-    ["RIGHT", "DOWN", "RIGHT"],
-    ["RIGHT", "DOWN", "RIGHT", "DOWN"],
-    ["RIGHT", "DOWN", "LEFT", "DOWN", "RIGHT"],
-    ["RIGHT", "DOWN", "RIGHT", "DOWN", "RIGHT"],
+    ["RIGHT"],                                              // L1: slide to goal
+    ["RIGHT", "RIGHT"],                                     // L2: stop on dirt, reach goal
+    ["RIGHT", "RIGHT"],                                     // L3: stop, then slide to goal
+    ["RIGHT", "RIGHT"],                                     // L4: slide over ice, stop, slide to goal
+    ["RIGHT", "DOWN", "RIGHT"],                             // L5: void blocks, go around
+    ["RIGHT", "DOWN", "RIGHT", "DOWN"],                     // L6: void braces
+    ["RIGHT", "DOWN", "LEFT", "DOWN", "RIGHT"],             // L7: combined mechanics
+    ["RIGHT", "DOWN", "RIGHT", "DOWN", "RIGHT"],            // L8: challenge
   ];
 
   routes.forEach((route, index) => {
