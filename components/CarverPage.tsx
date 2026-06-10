@@ -131,6 +131,7 @@ export default function CarverPage() {
             width={40}
             height={40}
             priority
+            unoptimized
             className="h-10 w-10 rounded-lg border border-[#414868] bg-[#0a0c10] shadow-[0_0_18px_rgba(122,162,247,0.22)]"
           />
           <span className="text-2xl font-black tracking-tight text-[#c0caf5]">carver</span>
