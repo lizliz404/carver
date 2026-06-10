@@ -2,21 +2,23 @@
 
 Carver is a browser-first puzzle game about irreversible damage becoming infrastructure.
 
-You move across a small board where dirt gives you traction, ice makes you slide, and void scars can become deliberate braces. The core question is not just “how do I preserve enough resources?” but “how can the damage I already caused become the structure that lets me move next?”
+You move across a small board where dirt gives you traction, ice makes you slide, reused ice collapses into void, and void scars can become deliberate braces. The core question is not just “how do I preserve enough resources?” but “how can the damage I already caused become the structure that lets me move next?”
 
 ## Play
 
 - Live game: https://carver.pages.dev
 - Platforms: desktop browser and mobile browser
 - Controls: `WASD`, arrow keys, swipe, or on-screen touch controls
+- Undo: `U` or `Z`
 - Restart: `R`
 
 ## Current Prototype
 
-- **Handmade levels:** three compact levels with a real next-level flow.
-- **Irreversible terrain:** leaving `Dirt` turns it into `Ice`.
+- **Handmade levels:** six compact levels with a gentler first-time ramp and a real next-level flow.
+- **Irreversible terrain:** leaving `Dirt` turns it into `Ice`; sliding over old `Ice` collapses it into `Void`.
 - **Void braces:** sliding into a `Void` scar stops you before it and restores footing under you.
-- **Unified help UI:** the question-mark icon opens the same rules modal on desktop and mobile.
+- **Low-friction recovery:** `U` / `Z` undoes the last stable move, reducing restart-only frustration.
+- **Contextual help UI:** the question-mark icon reveals rules beside the button on hover, focus, or tap, and closes from outside clicks.
 - **Static deployment:** built with Next.js static export for Cloudflare Pages.
 
 ## Design Thesis
