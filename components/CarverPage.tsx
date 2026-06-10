@@ -16,12 +16,8 @@ const languageIcon = {
 type Locale = "en" | "zh";
 
 type Copy = {
-  eyebrow: string;
-  noSignup: string;
-  title: string;
   intro: string;
   goalLine: string;
-  mode: string;
   controls: {
     move: string;
     restart: string;
@@ -34,19 +30,13 @@ type Copy = {
   notes: string[];
   tipLabel: string;
   tip: string;
-  ready: string;
-  engine: string;
 };
 
 const copy: Record<Locale, Copy> = {
   en: {
-    eyebrow: "FREE BROWSER PUZZLE",
-    noSignup: "NO SIGNUP",
-    title: "CARVER",
     intro:
       "Carver is a free browser puzzle game about irreversible movement. Move with WASD, arrow keys, swipe, or the touch buttons. Each step off dirt turns that tile into ice, so every route you carve changes how the next move behaves.",
     goalLine: "Reach the green goal. Use untouched dirt to stop. Press R to restart.",
-    mode: "Puzzle Mode",
     controls: {
       move: "Move",
       restart: "Restart",
@@ -71,17 +61,11 @@ const copy: Record<Locale, Copy> = {
     ],
     tipLabel: "Tip",
     tip: "The shortest-looking path is often a trap. Leave yourself one clean stop before the goal.",
-    ready: "READY",
-    engine: "VANILLA ENGINE",
   },
   zh: {
-    eyebrow: "免费浏览器谜题",
-    noSignup: "无需注册",
-    title: "CARVER",
     intro:
       "Carver 是一款关于不可逆移动的免费浏览器解谜游戏。用 WASD、方向键、滑动或触控按钮移动。每次离开泥土地块，它都会变成冰面，所以你凿出的每条路线都会改变下一步的移动方式。",
     goalLine: "到达绿色终点。用未踩过的泥地刹车。按 R 重新开始。",
-    mode: "解谜模式",
     controls: {
       move: "移动",
       restart: "重开",
@@ -106,8 +90,6 @@ const copy: Record<Locale, Copy> = {
     ],
     tipLabel: "提示",
     tip: "看起来最短的路经常是陷阱。到终点前，给自己留一个干净的刹车点。",
-    ready: "就绪",
-    engine: "原生引擎",
   },
 };
 
@@ -118,6 +100,26 @@ export default function CarverPage() {
   useEffect(() => {
     document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
   }, [locale]);
+
+  const bodyTextClass =
+    locale === "zh"
+      ? "font-sans text-[13px] leading-7 font-medium"
+      : "text-sm leading-6";
+
+  const goalClass =
+    locale === "zh"
+      ? "font-sans text-xs font-semibold"
+      : "text-[11px]";
+
+  const sidebarTextClass =
+    locale === "zh"
+      ? "font-sans text-[12px] leading-relaxed font-medium"
+      : "text-[11px] leading-relaxed";
+
+  const sidebarLabelClass =
+    locale === "zh"
+      ? "font-sans font-bold"
+      : "";
 
   return (
     <main className="h-[100dvh] w-full flex flex-col bg-[#05070a] text-[#c0caf5] font-mono overflow-hidden">
@@ -133,21 +135,14 @@ export default function CarverPage() {
           />
           <span className="text-2xl font-black tracking-tight text-[#c0caf5]">carver</span>
         </div>
-        <div className="flex items-center gap-3 sm:gap-6">
-          <div className="hidden sm:flex space-x-8 text-[10px] text-[#565f89]">
-            <span>{text.eyebrow}</span>
-            <span>{text.noSignup}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setLocale(locale === "en" ? "zh" : "en")}
-            className="inline-flex items-center gap-2 border border-[#414868] bg-[#1a1b26] px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-[#9aa5ce] transition hover:border-[#7aa2f7] hover:text-[#c0caf5]"
-            aria-label={locale === "en" ? "Switch to Chinese" : "切换到英文"}
-          >
-            <Icon icon={languageIcon} className="h-4 w-4" aria-hidden="true" />
-            {locale === "en" ? "中" : "EN"}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setLocale(locale === "en" ? "zh" : "en")}
+          className="inline-flex items-center justify-center border border-[#414868] bg-[#1a1b26] w-9 h-9 transition hover:border-[#7aa2f7] hover:text-[#c0caf5]"
+          aria-label={locale === "en" ? "Switch to Chinese" : "切换到英文"}
+        >
+          <Icon icon={languageIcon} className="h-4 w-4" aria-hidden="true" />
+        </button>
       </header>
 
       <div className="flex-1 flex min-h-0">
@@ -158,15 +153,9 @@ export default function CarverPage() {
           />
 
           <div className="relative z-10 mx-auto flex min-h-full w-full max-w-2xl flex-col items-center justify-center gap-6 px-4 py-6 md:py-8">
-            <div className="w-full flex items-start justify-between gap-4">
-              <div>
-                <h1 className="text-4xl md:text-5xl font-mono font-bold tracking-tighter text-[#c0caf5]">{text.title}</h1>
-                <p className="mt-2 max-w-[34rem] text-sm leading-6 text-[#9aa5ce]">{text.intro}</p>
-                <p className="mt-2 max-w-[34rem] text-[11px] uppercase tracking-widest text-[#7aa2f7]">{text.goalLine}</p>
-              </div>
-              <div className="text-[#565f89] flex shrink-0 items-center gap-2 text-xs uppercase tracking-widest bg-[#1a1b26] px-3 py-1 border border-[#24283b]">
-                {text.mode}
-              </div>
+            <div className="w-full">
+              <p className={`max-w-[34rem] text-[#9aa5ce] ${bodyTextClass}`}>{text.intro}</p>
+              <p className={`mt-2 max-w-[34rem] uppercase tracking-widest text-[#7aa2f7] ${goalClass}`}>{text.goalLine}</p>
             </div>
 
             <div className="w-full bg-[#1a1b26] border-2 border-[#414868] relative shadow-[0_0_50px_rgba(0,0,0,0.5)] flex items-center justify-center p-2 lg:p-4">
@@ -210,8 +199,8 @@ export default function CarverPage() {
               {text.ruleCards.map((rule) => (
                 <div className="flex gap-3" key={rule.label}>
                   <span className={`${rule.color} mt-1 text-[10px]`}>■</span>
-                  <div className="text-[11px] leading-relaxed text-[#9aa5ce]">
-                    <strong className="text-[#c0caf5]">{rule.label}</strong> {rule.text}
+                  <div className={`text-[#9aa5ce] ${sidebarTextClass}`}>
+                    <strong className={`text-[#c0caf5] ${sidebarLabelClass}`}>{rule.label}</strong> {rule.text}
                   </div>
                 </div>
               ))}
@@ -220,7 +209,7 @@ export default function CarverPage() {
 
           <div className="space-y-4">
             <h2 className="text-[#bb9af7] text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">{text.routeNotes}</h2>
-            <div className="space-y-3 text-[11px] leading-relaxed text-[#9aa5ce]">
+            <div className={`space-y-3 text-[#9aa5ce] ${sidebarTextClass}`}>
               {text.notes.map((note) => (
                 <p key={note}>{note}</p>
               ))}
@@ -229,20 +218,12 @@ export default function CarverPage() {
 
           <div className="p-4 border border-dashed border-[#414868] bg-[#1a1b26] mt-auto">
             <div className="text-[9px] text-[#565f89] mb-2 uppercase tracking-widest">{text.tipLabel}</div>
-            <p className="text-[10px] leading-relaxed text-[#717cb4]">{text.tip}</p>
+            <p className={`text-[#717cb4] ${locale === "zh" ? "font-sans text-[11px] leading-relaxed font-medium" : "text-[10px] leading-relaxed"}`}>{text.tip}</p>
           </div>
         </aside>
       </div>
 
       <footer className="h-10 bg-[#1a1b26] border-t border-[#24283b] flex items-center px-6 shrink-0">
-        <div className="flex space-x-6 text-[9px] tracking-widest text-[#565f89] font-bold">
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-[#9ece6a] mr-2" /> {text.ready}
-          </div>
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-[#24283b] mr-2 border border-[#414868]" /> {text.engine}
-          </div>
-        </div>
         <div className="ml-auto text-[9px] text-[#414868]">© 2026 CARVER</div>
       </footer>
     </main>
