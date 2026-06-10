@@ -1,6 +1,6 @@
-export type Tile = 'DIRT' | 'ICE' | 'VOID' | 'WALL' | 'GOAL';
-export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
-export type MoveResult = 'MOVED' | 'BLOCKED' | 'INACTIVE';
+export type Tile = "DIRT" | "ICE" | "VOID" | "WALL" | "GOAL";
+export type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT";
+export type MoveResult = "MOVED" | "BLOCKED" | "INACTIVE";
 
 export interface Position {
   x: number;
@@ -19,6 +19,7 @@ export interface GameState {
 
 export class GameEngine {
   public state: GameState;
+  private history: GameState[] = [];
 
   constructor(initialGrid: string[]) {
     this.state = this.parseGrid(initialGrid);
@@ -34,16 +35,16 @@ export class GameEngine {
       const row: Tile[] = [];
       for (let x = 0; x < cols; x++) {
         const char = raw[y][x];
-        if (char === '#') row.push('WALL');
-        else if (char === '.') row.push('DIRT');
-        else if (char === ' ') row.push('ICE');
-        else if (char === 'x') row.push('VOID');
-        else if (char === '$') row.push('GOAL');
-        else if (char === '@') {
-          row.push('DIRT'); // Player spawns on dirt
+        if (char === "#") row.push("WALL");
+        else if (char === ".") row.push("DIRT");
+        else if (char === " ") row.push("ICE");
+        else if (char === "x") row.push("VOID");
+        else if (char === "$") row.push("GOAL");
+        else if (char === "@") {
+          row.push("DIRT");
           player = { x, y };
         } else {
-          row.push('WALL');
+          row.push("WALL");
         }
       }
       grid.push(row);
@@ -53,22 +54,25 @@ export class GameEngine {
   }
 
   public input(dir: Direction): MoveResult {
-    if (this.state.won || this.state.dead || this.state.sliding) return 'INACTIVE';
+    if (this.state.won || this.state.dead || this.state.sliding)
+      return "INACTIVE";
 
-    const currentTile = this.state.grid[this.state.player.y][this.state.player.x];
-    
-    if (currentTile !== 'DIRT') return 'BLOCKED';
+    const currentTile =
+      this.state.grid[this.state.player.y][this.state.player.x];
+
+    if (currentTile !== "DIRT") return "BLOCKED";
 
     const nextPosition = this.getNextPosition(dir);
-    if (!this.isInBounds(nextPosition.x, nextPosition.y)) return 'BLOCKED';
-    if (this.isBlockingTile(this.state.grid[nextPosition.y][nextPosition.x])) return 'BLOCKED';
+    if (!this.isInBounds(nextPosition.x, nextPosition.y)) return "BLOCKED";
+    if (this.isBlockingTile(this.state.grid[nextPosition.y][nextPosition.x]))
+      return "BLOCKED";
 
-    // Moving means we leave DIRT, returning it to ICE
-    this.state.grid[this.state.player.y][this.state.player.x] = 'ICE';
-    
+    this.history.push(this.cloneState(this.state));
+    this.state.grid[this.state.player.y][this.state.player.x] = "ICE";
+
     this.state.sliding = dir;
-    this.step();
-    return 'MOVED';
+    this.step({ preserveCurrentTile: true });
+    return "MOVED";
   }
 
   public tick() {
@@ -77,13 +81,24 @@ export class GameEngine {
     }
   }
 
-  private step() {
+  public undo(): boolean {
+    if (this.state.sliding) return false;
+
+    const previousState = this.history.pop();
+    if (!previousState) return false;
+
+    this.state = previousState;
+    return true;
+  }
+
+  private step(options: { preserveCurrentTile?: boolean } = {}) {
     if (!this.state.sliding) return;
 
+    const currentPosition = { ...this.state.player };
     const { x: nx, y: ny } = this.getNextPosition(this.state.sliding);
 
-    // Out of bounds
     if (ny < 0 || ny >= this.state.rows || nx < 0 || nx >= this.state.cols) {
+      this.consumeCurrentIce(currentPosition, options.preserveCurrentTile);
       this.state.dead = true;
       this.state.sliding = null;
       return;
@@ -91,43 +106,53 @@ export class GameEngine {
 
     const nextTile = this.state.grid[ny][nx];
 
-    if (nextTile === 'WALL' || nextTile === 'VOID') {
-      if (nextTile === 'VOID') {
-        this.state.grid[this.state.player.y][this.state.player.x] = 'DIRT';
+    if (nextTile === "WALL" || nextTile === "VOID") {
+      if (nextTile === "VOID") {
+        this.state.grid[this.state.player.y][this.state.player.x] = "DIRT";
+      } else {
+        this.consumeCurrentIce(currentPosition, options.preserveCurrentTile);
       }
       this.state.sliding = null;
-      // We are on whatever tile we were on previously. BUT wait: 
-      // If we bumped into wall, we just stay at the previous tile and stop sliding.
-      // Oh wait, did we convert the tile we started sliding on? YES. 
-      // So if we hit a wall, we just stop on ICE. We can't move anymore unless we are on DIRT!
       return;
     }
 
-    // Move player
+    this.consumeCurrentIce(currentPosition, options.preserveCurrentTile);
     this.state.player = { x: nx, y: ny };
 
-    if (nextTile === 'GOAL') {
+    if (nextTile === "GOAL") {
       this.state.won = true;
       this.state.sliding = null;
       return;
     }
 
-    if (nextTile === 'DIRT') {
-      // We found dirt! We stop sliding automatically.
-      // We get our footing back.
+    if (nextTile === "DIRT") {
       this.state.sliding = null;
       return;
     }
+  }
 
-    // Otherwise it's ICE, we keep sliding next tick
+  private consumeCurrentIce(position: Position, preserveCurrentTile = false) {
+    if (preserveCurrentTile) return;
+    if (this.state.grid[position.y][position.x] === "ICE") {
+      this.state.grid[position.y][position.x] = "VOID";
+    }
+  }
+
+  private cloneState(state: GameState): GameState {
+    return {
+      ...state,
+      player: { ...state.player },
+      grid: state.grid.map((row) => [...row]),
+    };
   }
 
   private getNextPosition(dir: Direction): Position {
-    let dx = 0, dy = 0;
-    if (dir === 'UP') dy = -1;
-    if (dir === 'DOWN') dy = 1;
-    if (dir === 'LEFT') dx = -1;
-    if (dir === 'RIGHT') dx = 1;
+    let dx = 0,
+      dy = 0;
+    if (dir === "UP") dy = -1;
+    if (dir === "DOWN") dy = 1;
+    if (dir === "LEFT") dx = -1;
+    if (dir === "RIGHT") dx = 1;
 
     return { x: this.state.player.x + dx, y: this.state.player.y + dy };
   }
@@ -137,6 +162,6 @@ export class GameEngine {
   }
 
   private isBlockingTile(tile: Tile): boolean {
-    return tile === 'WALL' || tile === 'VOID';
+    return tile === "WALL" || tile === "VOID";
   }
 }
