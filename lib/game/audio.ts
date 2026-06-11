@@ -3,7 +3,7 @@
  * All sounds are synthesized — no external audio files.
  *
  * Architecture:
- *   - BGM: always-on glacial ambient drone, 2 states (idle / active)
+ *   - BGM: tonal glacial ambient pad, 2 states (idle / active)
  *   - SFX: short synthesized events (move, slide, blocked, restart, victory, death)
  */
 
@@ -99,21 +99,25 @@ function playNoise(
   } catch { /* ok */ }
 }
 
-// ── BGM: Glacial ambient drone ─────────────────────────────────────
-// Two oscillators create a deep, cold pad. An LFO provides slow pulse.
-// State "idle" = dim/buried; "active" = slightly brighter, more forward.
+// ── BGM: Tonal glacial ambient pad ─────────────────────────────────
+// The mix avoids low-frequency rumble as the main voice. A quiet bass layer
+// supports warmer mid tones and bright ice shimmer so the loop reads as music,
+// not HVAC noise.
 
 interface BGMState {
-  osc1: OscillatorNode;       // sub-bass sine ~41Hz
-  osc2: OscillatorNode;       // low-mid triangle ~82Hz
-  osc3: OscillatorNode;       // texture sawtooth ~164Hz, low-passed
-  lfo: OscillatorNode;        // ~0.15Hz sine for volume pulse
-  gain1: GainNode;            // osc1 gain
-  gain2: GainNode;            // osc2 gain
-  gain3: GainNode;            // osc3 gain
-  lfoGain: GainNode;          // LFO modulation depth
-  masterGain: GainNode;       // overall BGM volume
-  filter: BiquadFilterNode;   // low-pass on osc3
+  bassOsc: OscillatorNode;
+  rootOsc: OscillatorNode;
+  fifthOsc: OscillatorNode;
+  shimmerOsc: OscillatorNode;
+  lfo: OscillatorNode;
+  bassGain: GainNode;
+  rootGain: GainNode;
+  fifthGain: GainNode;
+  shimmerGain: GainNode;
+  lfoGain: GainNode;
+  masterGain: GainNode;
+  padFilter: BiquadFilterNode;
+  shimmerFilter: BiquadFilterNode;
   started: boolean;
   currentState: "idle" | "active";
 }
@@ -121,9 +125,25 @@ interface BGMState {
 let bgm: BGMState | null = null;
 
 const BGM_PARAMS = {
-  idle: { g1: 0.018, g2: 0.010, g3: 0.004, master: 0.65, filterFreq: 200 },
-  active: { g1: 0.025, g2: 0.016, g3: 0.008, master: 0.85, filterFreq: 400 },
-  transitionTime: 1.5, // seconds to ramp between states
+  idle: {
+    bass: 0.006,
+    root: 0.018,
+    fifth: 0.012,
+    shimmer: 0.004,
+    master: 0.38,
+    padFilter: 520,
+    shimmerFilter: 1800,
+  },
+  active: {
+    bass: 0.008,
+    root: 0.024,
+    fifth: 0.017,
+    shimmer: 0.008,
+    master: 0.48,
+    padFilter: 860,
+    shimmerFilter: 2600,
+  },
+  transitionTime: 1.2,
 };
 
 function rampTo(target: AudioParam, value: number, time: number, ctx: AudioContext) {
@@ -138,64 +158,86 @@ export const BGM = {
       const ctx = getCtx();
       const now = ctx.currentTime;
 
-      // Sub-bass oscillator (~41 Hz = low E, rumbles feel rather than hear)
-      const osc1 = ctx.createOscillator();
-      osc1.type = "sine";
-      osc1.frequency.setValueAtTime(41.2, now);
+      const bassOsc = ctx.createOscillator();
+      bassOsc.type = "sine";
+      bassOsc.frequency.setValueAtTime(55, now);
 
-      const gain1 = ctx.createGain();
-      gain1.gain.setValueAtTime(BGM_PARAMS.idle.g1, now);
+      const rootOsc = ctx.createOscillator();
+      rootOsc.type = "triangle";
+      rootOsc.frequency.setValueAtTime(220, now);
+      rootOsc.detune.setValueAtTime(-4, now);
 
-      // Low-mid triangle (octave up)
-      const osc2 = ctx.createOscillator();
-      osc2.type = "triangle";
-      osc2.frequency.setValueAtTime(82.4, now);
+      const fifthOsc = ctx.createOscillator();
+      fifthOsc.type = "sine";
+      fifthOsc.frequency.setValueAtTime(329.63, now);
+      fifthOsc.detune.setValueAtTime(3, now);
 
-      const gain2 = ctx.createGain();
-      gain2.gain.setValueAtTime(BGM_PARAMS.idle.g2, now);
+      const shimmerOsc = ctx.createOscillator();
+      shimmerOsc.type = "triangle";
+      shimmerOsc.frequency.setValueAtTime(659.25, now);
+      shimmerOsc.detune.setValueAtTime(6, now);
 
-      // Texture sawtooth (2 octaves up), heavily low-passed
-      const osc3 = ctx.createOscillator();
-      osc3.type = "sawtooth";
-      osc3.frequency.setValueAtTime(164.8, now);
+      const bassGain = ctx.createGain();
+      bassGain.gain.setValueAtTime(BGM_PARAMS.idle.bass, now);
 
-      const filter = ctx.createBiquadFilter();
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(BGM_PARAMS.idle.filterFreq, now);
-      filter.Q.setValueAtTime(0.5, now);
+      const rootGain = ctx.createGain();
+      rootGain.gain.setValueAtTime(BGM_PARAMS.idle.root, now);
 
-      const gain3 = ctx.createGain();
-      gain3.gain.setValueAtTime(BGM_PARAMS.idle.g3, now);
+      const fifthGain = ctx.createGain();
+      fifthGain.gain.setValueAtTime(BGM_PARAMS.idle.fifth, now);
 
-      // LFO for subtle volume pulse
+      const shimmerGain = ctx.createGain();
+      shimmerGain.gain.setValueAtTime(BGM_PARAMS.idle.shimmer, now);
+
+      const padFilter = ctx.createBiquadFilter();
+      padFilter.type = "lowpass";
+      padFilter.frequency.setValueAtTime(BGM_PARAMS.idle.padFilter, now);
+      padFilter.Q.setValueAtTime(0.7, now);
+
+      const shimmerFilter = ctx.createBiquadFilter();
+      shimmerFilter.type = "bandpass";
+      shimmerFilter.frequency.setValueAtTime(BGM_PARAMS.idle.shimmerFilter, now);
+      shimmerFilter.Q.setValueAtTime(1.2, now);
+
       const lfo = ctx.createOscillator();
       lfo.type = "sine";
-      lfo.frequency.setValueAtTime(0.15, now);
+      lfo.frequency.setValueAtTime(0.09, now);
 
       const lfoGain = ctx.createGain();
-      lfoGain.gain.setValueAtTime(0.003, now);
+      lfoGain.gain.setValueAtTime(0.002, now);
 
-      // Master gain
       const masterGain = ctx.createGain();
       masterGain.gain.setValueAtTime(BGM_PARAMS.idle.master, now);
 
-      // Routing
-      osc1.connect(gain1).connect(masterGain);
-      osc2.connect(gain2).connect(masterGain);
-      osc3.connect(filter).connect(gain3).connect(masterGain);
-      lfo.connect(lfoGain).connect(gain1.gain); // LFO modulates sub-bass
+      bassOsc.connect(bassGain).connect(masterGain);
+      rootOsc.connect(rootGain).connect(padFilter);
+      fifthOsc.connect(fifthGain).connect(padFilter);
+      padFilter.connect(masterGain);
+      shimmerOsc.connect(shimmerFilter).connect(shimmerGain).connect(masterGain);
+      lfo.connect(lfoGain).connect(rootGain.gain);
 
       masterGain.connect(ctx.destination);
 
-      osc1.start(now);
-      osc2.start(now);
-      osc3.start(now);
+      bassOsc.start(now);
+      rootOsc.start(now);
+      fifthOsc.start(now);
+      shimmerOsc.start(now);
       lfo.start(now);
 
       bgm = {
-        osc1, osc2, osc3, lfo,
-        gain1, gain2, gain3, lfoGain,
-        masterGain, filter,
+        bassOsc,
+        rootOsc,
+        fifthOsc,
+        shimmerOsc,
+        lfo,
+        bassGain,
+        rootGain,
+        fifthGain,
+        shimmerGain,
+        lfoGain,
+        masterGain,
+        padFilter,
+        shimmerFilter,
         started: true,
         currentState: "idle",
       };
@@ -210,11 +252,13 @@ export const BGM = {
       const p = BGM_PARAMS[state];
       const t = BGM_PARAMS.transitionTime;
 
-      rampTo(bgm.gain1.gain, p.g1, t, ctx);
-      rampTo(bgm.gain2.gain, p.g2, t, ctx);
-      rampTo(bgm.gain3.gain, p.g3, t, ctx);
+      rampTo(bgm.bassGain.gain, p.bass, t, ctx);
+      rampTo(bgm.rootGain.gain, p.root, t, ctx);
+      rampTo(bgm.fifthGain.gain, p.fifth, t, ctx);
+      rampTo(bgm.shimmerGain.gain, p.shimmer, t, ctx);
       rampTo(bgm.masterGain.gain, p.master, t, ctx);
-      rampTo(bgm.filter.frequency, p.filterFreq, t, ctx);
+      rampTo(bgm.padFilter.frequency, p.padFilter, t, ctx);
+      rampTo(bgm.shimmerFilter.frequency, p.shimmerFilter, t, ctx);
 
       bgm.currentState = state;
     } catch { /* ok */ }
@@ -228,9 +272,10 @@ export const BGM = {
       bgm.masterGain.gain.linearRampToValueAtTime(0.001, now + 2);
       setTimeout(() => {
         try {
-          bgm?.osc1.stop();
-          bgm?.osc2.stop();
-          bgm?.osc3.stop();
+          bgm?.bassOsc.stop();
+          bgm?.rootOsc.stop();
+          bgm?.fifthOsc.stop();
+          bgm?.shimmerOsc.stop();
           bgm?.lfo.stop();
         } catch { /* already stopped */ }
         bgm = null;
