@@ -1,681 +1,350 @@
-# Carver 2.0 PRD
+# Carver PRD — Irreversible Movement Puzzle
 
-## 0. Core Judgment
+## Core Judgment
 
-Carver 1.0 validated the hook, not the game.
+Carver should not become a feature-rich puzzle platform. Its durable product shape is smaller and sharper:
 
-The thesis is strong:
+> A tiny board where every move edits the future, and the best solution often uses the damage you already caused.
 
-> every move changes the board
-> progress consumes future control
+The old framing — “preserve stopping points” — was too narrow. The better framing is:
 
-But the current mechanic only teaches one durable lesson:
+> Damage becomes infrastructure.
 
-> preserve stopping points
+That sentence is the product. Everything else is implementation detail.
 
-That is not enough to sustain a puzzle game. It is a good local rule, not a complete rulespace.
+## Product Promise
 
-Carver 2.0 should not be a polish pass. It should be a mechanics rewrite whose job is to turn the thesis into a system that keeps producing new thoughts.
+Carver is a minimalist browser puzzle game about irreversible movement.
 
-## 1. What 1.0 Proved
+The player is not merely finding a path. The player is carving a world that remains changed after every move. A good Carver level makes the player realize that a mistake, scar, collapse, or apparent dead end may become the exact structure needed to solve the board.
 
-### What worked
+One-line public promise:
 
-- The name, icon, dark terminal atmosphere, and `carver` identity are coherent.
-- The browser delivery model works: static Next.js, Canvas, Cloudflare Pages.
-- The bilingual presentation and SEO shell are good enough to keep.
-- The first-time interaction lands: leaving dirt behind and seeing it become ice is legible and memorable.
-- The phrase “progress consumes future control” is the right north star.
-
-### What failed
-
-- The core gameplay collapses into “count the remaining stopping points.”
-- The player sees most of the rulespace within a few minutes.
-- Later levels risk becoming larger arrangements of the same idea, not new ways of thinking.
-- The product wrapper is currently more mature than the puzzle system.
-- The existing UI copy reinforces the narrow 1.0 strategy: preserve stopping points.
-
-### Root cause
-
-The thesis and the mechanic are on different abstraction levels.
-
-- Thesis: irreversible decisions reshape the future.
-- Current mechanic: dirt becomes ice, ice makes you slide.
-
-Those are related, but not equivalent. “Sliding on ice” is only one expression of irreversible control loss. The real design interest is not ice. It is history becoming constraint.
-
-## 2. 2.0 Product Thesis
-
-Carver 2.0 is a minimalist puzzle game about irreversible progress.
-
-The player is not merely crossing a board. The player is spending the board.
-
-One-line product promise:
-
-> This is not a puzzle about finding the path. It is a puzzle about what your path destroys.
+> Every move spends the board. Sometimes the wound is the way out.
 
 Chinese promise:
 
-> 这不是一个找路游戏，而是一个关于“你走出的路会摧毁什么”的游戏。
+> 每一步都会消耗棋盘。有时，伤口本身就是出路。
 
-## 3. Design Goal
+## Target User
 
-Carver 2.0 must make the player repeatedly update their model of the world.
+Carver is for players who like compact logic toys rather than content-heavy games:
 
-The target progression is not:
+- puzzle players who enjoy Sokoban, Baba Is You, Stephen's Sausage Roll, A Monster's Expedition, or tiny browser puzzles;
+- people who enjoy “one new rule changes everything” moments;
+- portfolio visitors who should understand the product in under 20 seconds.
+
+It is not for users looking for action, collectibles, narrative progression, accounts, score chasing, or procedural endless play.
+
+## Current Product State
+
+The current prototype has already crossed the most important line: it is a real playable game, not a decorative shell.
+
+What exists:
+
+- static Next.js browser delivery;
+- Canvas-based board renderer;
+- eight handmade levels;
+- keyboard, swipe, and touch controls;
+- undo and restart;
+- bilingual UI;
+- Web Audio SFX/BGM;
+- engine tests;
+- terrain lifecycle: `Dirt -> Ice -> Void`;
+- void brace behavior: `Void` is not just death/absence; it can stop a slide and restore a decision point.
+
+The important product correction is that `Void` should remain useful. If `Void` is only punishment, Carver becomes resource accounting. If `Void` can become a brace, Carver becomes a game about reusing irreversible damage.
+
+## Product Constitution
+
+### 1. One Board, One Thought
+
+A level should teach or invert one thought. If a level needs a paragraph, the level is doing the wrong job.
+
+Good level question:
+
+- Can I make this scar useful?
+- Should I spend this foothold now or later?
+- Is the clean route a trap?
+- Can I deliberately collapse a path to create a stop?
+
+Bad level question:
+
+- Did I remember five tile types?
+- Did I read the tutorial text?
+- Did I brute-force all arrow-key sequences?
+
+### 2. Irreversibility Must Be Legible
+
+Every changed tile must answer three questions visually:
+
+- What was it?
+- What is it now?
+- Can I use it again?
+
+If the player cannot predict a tile's next state before moving, the mechanic is not ready.
+
+### 3. Damage Must Sometimes Help
+
+This is the non-obvious insight. Most irreversible puzzle games make damage a cost. Carver's distinctive move is that damage can become structure.
+
+Design implication:
+
+- `Void` should not be only a pit.
+- Collapsed routes should sometimes become braces, blockers, or future alignment tools.
+- A beautiful Carver solution should feel slightly wrong before it feels inevitable.
+
+### 4. Undo Is Thinking Support
+
+Undo is not an accessibility concession or an easy-mode feature. It is the correct interface for a prediction-heavy puzzle.
+
+Rules:
+
+- keep undo fast and cheap;
+- restore full engine state;
+- never punish experimentation in normal mode;
+- do not add score/leaderboard pressure that makes undo feel shameful.
+
+### 5. No Content Inflation
+
+More levels are useful only if they create new thinking. A 12-level Carver with six strong reversals is better than a 60-level Carver that repeats “save enough stops.”
+
+Do not add:
+
+- enemies;
+- timers;
+- powerups;
+- meta-progression;
+- procedural generation;
+- daily challenges;
+- leaderboards;
+- accounts;
+- story mode;
+- a level editor;
+- monetization.
+
+Not yet. Probably not ever, unless external play shows a real need.
+
+## Mechanics Contract
+
+### Existing Tile Grammar
 
 ```text
-learn stopping points → practice stopping points → harder stopping points
+#      Wall: blocks movement
+@      Player start
+$      Goal: win condition
+.      Dirt: stable foothold; can initiate deliberate movement
+space  Ice: frictionless slide surface
+x      Void scar: unusable as floor, but can brace a slide
 ```
 
-The target progression is:
+### Existing Terrain Lifecycle
 
 ```text
-movement changes terrain
-→ terrain has durability
-→ control points are consumable
-→ old paths become future constraints
-→ solving now can destroy solving later
-```
-
-A successful 2.0 level should make the player ask at least one of these questions:
-
-- What am I spending by moving here?
-- Do I need this tile now, or later?
-- Should I preserve control, or deliberately lose it?
-- Can I turn my previous damage into a tool?
-- Does the obvious successful route make the final route impossible?
-
-## 4. Design Principles
-
-### 4.1 Thesis before feature
-
-Every mechanic must serve this sentence:
-
-> Progress consumes future control.
-
-If a mechanic is only a new obstacle, decoration, or content multiplier, it does not belong in 2.0.
-
-### 4.2 Fewer mechanics, deeper consequences
-
-Do not add Clay, Glass, Sponge, Ember, timers, history scars, propagation, and moving goals all at once. That creates a busy prototype, not a sharper game.
-
-2.0 should first prove that a small grammar can produce 20 good handcrafted levels.
-
-### 4.3 Old habits must break
-
-A new layer is only successful if it invalidates an old autopilot.
-
-Example:
-
-- 1.0 habit: preserve stopping points.
-- 2.0 correction: some stopping points must be consumed early; some must be destroyed; some are traps if preserved.
-
-### 4.4 The board must explain itself
-
-No long tutorial overlays. New rules should be taught by tiny levels that isolate the rule, then invert it.
-
-Text can label, but the level must teach.
-
-## 5. Core 2.0 Mechanics
-
-## 5.1 Foundation: Dirt Becomes Ice
-
-Keep the 1.0 foundation:
-
-```text
-Dirt → leave → Ice
-Ice → slide
-Wall → stop/block
-Goal → win
-```
-
-But reframe it correctly:
-
-- This is the alphabet.
-- This is not the full language.
-- It teaches that movement changes the world.
-
-## 5.2 Primary Upgrade: Terrain Durability
-
-Add tile lifecycle:
-
-```text
-Dirt → Ice → Void
+Dirt -> Ice -> Void
 ```
 
 Rules:
 
-- Leaving `Dirt` turns it into `Ice`.
-- Passing over `Ice` consumes its final durability and turns it into `Void` after the player leaves it.
-- `Void` cannot be crossed. Depending on level tuning, entering it either kills the player or is blocked; the MVP should prefer “blocked” for clarity unless death is already visually obvious.
+- leaving `Dirt` turns it into `Ice`;
+- sliding over old `Ice` can collapse it into `Void`;
+- `Void` stops a slide before the scar and can restore footing under the player;
+- the goal is destination, not terrain grammar.
 
-Why this matters:
+### Design Interpretation
 
-1.0 asks:
+`Dirt` is agency.
+`Ice` is spent agency.
+`Void` is damage that may become structure.
 
-> Where can I stop?
+This interpretation should guide copy, renderer, sound, and future levels.
 
-2.0 starts asking:
+## Level Design Doctrine
 
-> Which parts of the board can survive being used twice?
+### The Teaching Arc
 
-This is the smallest change that upgrades the game from stopping-point counting to irreversible resource management.
-
-## 5.3 Control Resource: Anchor Tiles
-
-Add `Anchor` as a deliberate stopping resource.
-
-Rules:
-
-- `Anchor` stops sliding.
-- Standing on `Anchor` allows the next deliberate move.
-- `Anchor` does not behave like normal dirt.
-
-MVP variants:
-
-- `Anchor`: permanent stop.
-- `Fragile Anchor`: stops once, then becomes `Ice` or `Void`.
-
-Design purpose:
-
-- Turns “stopping point” from accidental leftover dirt into an explicit resource.
-- Lets level design separate “terrain durability” from “control recovery.”
-- Creates choices about when to spend control.
-
-Important: do not overuse permanent anchors. If anchors are too stable, 2.0 regresses back into “count the stops.”
-
-## 5.4 Optional Later Layer: Directional Memory
-
-Only after durability + anchors prove depth, consider directional memory.
-
-Rule concept:
+The current arc should stay compact:
 
 ```text
-A carved tile remembers the direction used to create it.
-Re-entering that tile biases or forces movement along that remembered direction.
+agency exists
+-> movement spends agency
+-> spent agency removes control
+-> reused agency collapses
+-> collapse can become support
+-> damage can be placed deliberately
 ```
 
-Why it is interesting:
+### Level Quality Test
 
-- The board does not just become worse; it remembers how you shaped it.
-- The player’s past intention becomes a future constraint.
-- This directly expresses “history becomes structure.”
+A level is worth keeping if at least one of these is true:
 
-Risk:
+- the first obvious move is wrong for an interesting reason;
+- the player must create a scar intentionally;
+- an old scar becomes a useful stop;
+- the solution changes how the player describes the rules;
+- the level is a clean tutorial for exactly one mechanic.
 
-- Cognitive load is high.
-- Visual language must be excellent.
-- It should not be in the first MVP unless 20-level durability playtesting is already successful.
+A level should be cut if:
 
-## 5.5 Optional Later Layer: Moving Goal
+- it is only bigger;
+- it requires blind trial-and-error;
+- the same idea appears in a cleaner earlier level;
+- the difficulty comes from cramped geometry rather than changed reasoning;
+- the player wins without understanding why.
 
-A moving or stateful goal can be explored later, but it is not MVP.
+### Next Level Set Target
 
-Good version:
+The next stable version should aim for 10-14 levels, not 30.
 
-- The goal shifts after specific terrain changes.
-- The player must prepare the future goal position before activating it.
+Suggested shape:
 
-Bad version:
+- 2 levels: agency and sliding;
+- 2 levels: collapse and void creation;
+- 3 levels: void as brace;
+- 2 levels: deliberate scar placement;
+- 1-3 levels: synthesis/challenge.
 
-- The goal simply moves every N turns.
-- This becomes timing noise instead of irreversible planning.
+A 15th level is allowed only if it proves a genuinely new inversion.
 
-## 6. Mechanics to Avoid for 2.0 MVP
+## UX Requirements
 
-Avoid these until the core loop proves itself:
+### First 20 Seconds
 
-- Large terrain taxonomy: Clay, Glass, Sponge, Ember, etc.
-- Timers and pulse tiles.
-- Cross-attempt memory.
-- Procedural level generation.
-- Enemies.
-- Powerups.
-- Narrative systems.
-- Score chasing.
-- Monetization/account features.
+The player should be able to start without reading.
 
-Reason:
+Required:
 
-Carver’s current problem is not lack of content. It is insufficient mechanic unfolding. Adding many rules too early can hide the problem instead of solving it.
+- visible board above any long explanation;
+- one-line tagline;
+- first level solvable with one obvious input;
+- help available, not forced;
+- mobile touch controls never cover the board.
 
-## 7. Level Progression
+### Copy Direction
 
-## 7.1 Chapter 1: First Cut
+Use physical, human language. Avoid abstract design jargon in the app surface.
 
-Purpose: preserve the 1.0 “aha.”
+Good:
 
-Mechanics:
+- “Every move spends the board.”
+- “Old ice collapses into a scar.”
+- “Aim at the wound. Let it stop you.”
+- “The clean route is not always the safe route.”
 
-- Dirt
-- Ice
-- Wall
-- Goal
+Avoid:
 
-Player learns:
+- “resource optimization”;
+- “terrain lifecycle management”;
+- “state transition puzzle”;
+- “procedural mechanic depth.”
 
-- Moving changes terrain.
-- Ice removes voluntary stopping.
-- Untouched dirt can recover control.
+### Audio Direction
 
-Level count: 4–5.
+BGM should feel tonal, cold, and spacious — not like low-frequency machine hum.
 
-Exit test:
+Contract:
 
-- Player can explain why shortest path is not always correct.
+- bass supports, never dominates;
+- musical body lives in low-mid/mid/high harmonic layers;
+- state changes may brighten or dim the pad, but should not become busy music;
+- SFX should clarify actions, not arcade-ify the game.
 
-## 7.2 Chapter 2: No Road Twice
+Audio failure test:
 
-Purpose: introduce terrain durability.
+> If a player describes the background as “white noise,” “fan hum,” or “low drone,” the mix is wrong.
 
-Mechanics:
+## Technical Contract
 
-- Dirt → Ice → Void
+### Architecture
 
-Player learns:
+Keep the seams boring:
 
-- A route can be useful once and fatal later.
-- Reusing a path is a cost, not a default.
-- Preserving all stops is not always possible.
+- `lib/game/engine.ts`: owns rules and state transitions;
+- `lib/game/levels.ts`: owns playable level data;
+- `lib/game/renderer.ts`: draws state and feedback;
+- `lib/game/audio.ts`: owns synthesized sound;
+- `components/GameCanvas.tsx`: connects input, loop, renderer, and engine;
+- `components/CarverPage.tsx`: product shell and copy.
 
-Level count: 6–8.
+Do not move game rules into React UI. Do not infer rules in the renderer.
 
-Teaching order:
+### Verification Gate
 
-```text
-isolate → repeat → punish reuse → require deliberate breakage → combine with 1.0 sliding
+Before shipping product changes:
+
+```bash
+npm run check
 ```
 
-Exit test:
+For deployment-sensitive changes:
 
-- Player can predict which tiles will become unusable after a move.
-
-## 7.3 Chapter 3: Borrowed Control
-
-Purpose: make control explicit and consumable.
-
-Mechanics:
-
-- Anchor
-- Fragile Anchor
-
-Player learns:
-
-- Control is a resource.
-- Stopping early can be wrong.
-- Spending a stop can open one route while closing another.
-
-Level count: 6–8.
-
-Exit test:
-
-- Player solves at least one level by refusing an obvious anchor.
-
-## 7.4 Chapter 4: Past Becomes Structure
-
-Purpose: introduce one high-leverage memory mechanic if earlier chapters succeed.
-
-Candidate mechanic:
-
-- Directional Memory
-
-Player learns:
-
-- The board remembers not only where you moved, but how.
-- A previous route can become infrastructure or trap.
-
-Level count: 6–10.
-
-Gate:
-
-- Do not build this chapter until Chapters 1–3 produce at least 20 playable levels and external playtesters report genuine new thinking.
-
-## 8. MVP Scope
-
-The first 2.0 implementation should be deliberately small.
-
-### Must ship
-
-- `Dirt → Ice → Void` lifecycle.
-- `Anchor` tile.
-- `Fragile Anchor` tile if permanent anchors are too easy.
-- Undo last move.
-- Restart level.
-- Level select.
-- 15–20 handcrafted levels.
-- Engine-level tests for all tile transitions.
-- Visual distinction for Dirt, Ice, Void, Anchor, Fragile Anchor.
-- Updated EN/ZH copy that no longer frames the game only as “preserve stopping points.”
-
-### Should ship
-
-- Move counter.
-- Undo counter.
-- Simple chapter labels.
-- Tiny one-line mechanic hints per chapter.
-- Mobile geometry check for controls not covering the board.
-
-### Should not ship yet
-
-- Directional memory.
-- Propagation.
-- Timers.
-- Moving goal.
-- Procedural generation.
-- Scoring/leaderboards.
-
-## 9. Engine Requirements
-
-Current engine state is too narrow:
-
-```ts
-Tile = 'DIRT' | 'ICE' | 'WALL' | 'GOAL'
+```bash
+npm run build
 ```
 
-2.0 needs the engine to own rules, not the component.
+For folder hygiene:
 
-Required concepts:
-
-- Tile lifecycle and durability.
-- Movement resolution.
-- Slide stopping rules.
-- Transition events for renderer/SFX.
-- Level loading from data.
-- Undo stack.
-- Win/loss state.
-
-Suggested tile set for MVP:
-
-```ts
-Tile =
-  | 'DIRT'
-  | 'ICE'
-  | 'VOID'
-  | 'WALL'
-  | 'GOAL'
-  | 'ANCHOR'
-  | 'FRAGILE_ANCHOR';
+```bash
+npm run clean
 ```
 
-Suggested move result events:
+Generated directories such as `.next/`, `out/`, `node_modules/`, and `tsconfig.tsbuildinfo` are local artifacts, not source.
 
-```ts
-type GameEvent =
-  | { type: 'tileChanged'; from: Tile; to: Tile; x: number; y: number }
-  | { type: 'startedSliding'; direction: Direction }
-  | { type: 'stopped'; reason: 'wall' | 'dirt' | 'anchor' | 'blocked' }
-  | { type: 'won' }
-  | { type: 'dead' };
-```
+## External Validation
 
-The renderer should consume events. It should not infer rules by inspecting state after the fact.
+Do not declare Carver “done” because the PRD sounds elegant. That is the velvet-lined trap.
 
-## 10. Level Data Requirements
+Run a small playtest with 5 people.
 
-Levels must be data, not hardcoded component behavior.
+Observe without explaining:
 
-Each level should declare:
-
-- id
-- title
-- chapter
-- grid
-- mechanic tags
-- optional EN/ZH hint
-- optional reference solution for tests
-
-Example shape:
-
-```ts
-type LevelDefinition = {
-  id: string;
-  title: string;
-  chapter: 'first-cut' | 'no-road-twice' | 'borrowed-control' | 'past-becomes-structure';
-  grid: string[];
-  mechanics: Array<'ice' | 'void' | 'anchor' | 'fragile-anchor' | 'directional-memory'>;
-  hint: { en: string; zh: string };
-  solution?: Direction[];
-};
-```
-
-## 11. UX Requirements
-
-### Controls
-
-Keep:
-
-- WASD
-- arrow keys
-- swipe
-- touch D-pad
-- restart
-
-Add:
-
-- undo
-- level select
-- visible level/chapter indicator
-
-### Copy direction
-
-Stop explaining the game as “preserve stopping points.”
-
-Better copy:
-
-- “Every route spends the board.”
-- “Ice can carry you once. Reuse it carelessly and the path collapses.”
-- “Anchors give control back, but some control can only be borrowed once.”
-
-Chinese direction:
-
-- “你不是在找路，你是在花掉棋盘。”
-- “冰面能带你走一次；重复使用会让路塌掉。”
-- “锚点能把控制权借回来，但有些控制权只能借一次。”
-
-### Undo
-
-Undo is a UX feature, not a world mechanic.
-
-Rules:
-
-- Default: unlimited undo for normal mode.
-- Optional later: challenge mode can limit undo.
-- Undo must restore full engine state, including tile durability and fragile anchors.
-
-Why:
-
-Carver is prediction-heavy. Without undo, players will restart too often and confuse puzzle difficulty with interface punishment.
-
-## 12. Visual Requirements
-
-The visual language must communicate rules before beauty.
-
-Required distinctions:
-
-- Dirt: stable, grippy, usable.
-- Ice: slick, already spent once.
-- Void: gone, unusable, dangerous.
-- Anchor: control recovery.
-- Fragile Anchor: control recovery with visible decay.
-- Goal: destination, not terrain.
-
-Rules:
-
-- Do not rely only on color.
-- Use texture/shape differences for tile state.
-- Tile changes must animate briefly and clearly.
-- Void must not look like background decoration.
-- Fragile Anchor must show its one-use nature before the player steps on it.
-
-## 13. Testing Requirements
-
-### Engine tests
-
-Must test:
-
-- Dirt becomes Ice after leaving.
-- Ice becomes Void after being reused, if lifecycle rule is enabled.
-- Void blocks movement or kills consistently, based on chosen MVP rule.
-- Anchor stops sliding.
-- Fragile Anchor stops once and then degrades.
-- Wall stops or blocks correctly.
-- Goal wins.
-- Undo restores grid, player position, sliding state, win/death state, and fragile tile state.
-- Input is ignored while sliding, won, or dead.
-
-### Level tests
-
-Must test:
-
-- Each level has exactly one player start.
-- Each level has at least one goal.
-- Each level only uses unlocked mechanics for its chapter.
-- Every level with a reference solution is solvable by replaying that solution through the engine.
-- EN/ZH hints exist for each level that has a hint key.
-
-### Product checks
-
-Must verify:
-
-- `npm run check` passes.
-- Production build succeeds.
-- Mobile controls do not overlap the board.
-- The live site still defaults to English and switches to Chinese correctly.
-
-## 14. External Validation Plan
-
-Do not declare 2.0 successful because the PRD sounds good. That is exactly the trap.
-
-Validation target:
-
-- Ship a 15–20 level prototype.
-- Put it in front of 5–10 real players.
-- Watch without explaining.
-
-Collect:
-
-- Where players first understand `Ice → Void`.
-- Whether they can explain anchors after one or two levels.
-- Which levels create “new thought” versus “same trick again.”
-- Whether failures feel earned or arbitrary.
-- Whether players use undo as thinking support or spam it from confusion.
+- Can they start within 20 seconds?
+- When do they understand `Dirt -> Ice -> Void`?
+- Do they discover that `Void` can help?
+- Do they describe the game as “save stops” or “use damage”?
+- Which level creates the first real pause/thought?
+- Where do they brute-force with undo?
 
 Success signals:
 
-- Players describe the game as managing irreversible cost, not only preserving stops.
-- Players change strategy between chapters.
-- At least one level makes players solve by deliberately destroying or refusing control.
-- Players can predict tile transitions before moving.
+- players intentionally create scars;
+- players can predict tile changes before moving;
+- players verbalize “damage as structure” in their own words;
+- at least one level creates a clean aha without extra text;
+- no one needs a long tutorial to understand the core.
 
 Failure signals:
 
-- Players still summarize the game as “leave stopping points.”
-- Levels after 10 feel like larger versions of the same trick.
-- Players brute-force with undo instead of forming a model.
-- Tile transitions surprise players in a bad way.
-- The new mechanics require too much text to explain.
+- players think `Void` is only a hazard;
+- later levels feel like larger copies of earlier ones;
+- undo becomes blind spam;
+- BGM feels like low-frequency noise;
+- the product wrapper feels more polished than the rulespace.
 
-## 15. Response to the Critique
+## Kill / Cut Rules
 
-The critique is correct.
+If future work adds complexity but does not strengthen “damage becomes infrastructure,” cut it.
 
-Carver 1.0 has a strong thesis but an underpowered mechanic. “Dirt becomes ice” is not wrong; it is just incomplete. It creates one good insight, then runs out.
+Cut candidates first:
 
-The important correction is this:
+1. any new tile type that behaves like a generic obstacle;
+2. any tutorial copy that compensates for unclear levels;
+3. any level whose solution cannot be explained in one sentence;
+4. any UI panel that competes with the board;
+5. any audio layer that masks action feedback.
 
-> Carver is not fundamentally about ice. It is about irreversible decisions.
+## Next Checkpoint
 
-Ice should remain because it is a clean first expression of control loss. But it must become layer one of a broader system where terrain has durability, control is consumable, and previous movement creates future constraints.
+The next meaningful checkpoint is not another strategy document.
 
-The next version should not ask, “What other cool tiles can we add?”
+It is:
 
-It should ask:
-
-> What is the smallest ruleset that keeps making the player rethink the cost of progress?
-
-For 2.0, the answer is:
-
-```text
-Dirt → Ice → Void
-+
-Anchor / Fragile Anchor
-+
-Undo
-+
-15–20 handcrafted levels
-+
-engine tests
-+
-real playtest observation
-```
-
-That is enough to prove whether Carver is a real puzzle system or just a beautiful GIF.
-
-## 16. 2.0 Implementation Sequence
-
-### Phase 1: Engine seam
-
-- Move all rule behavior into engine-level modules.
-- Add tile lifecycle support.
-- Add level data loading.
-- Add undo stack.
-- Add tests before expanding UI.
-
-### Phase 2: MVP mechanics
-
-- Implement `VOID`.
-- Implement `ANCHOR`.
-- Implement `FRAGILE_ANCHOR` only if needed after first levels.
-- Emit explicit game events for renderer/SFX.
-
-### Phase 3: Level set
-
-- Build 5 First Cut levels.
-- Build 6–8 No Road Twice levels.
-- Build 6–8 Borrowed Control levels.
-- Include reference solutions for at least core teaching levels.
-
-### Phase 4: Product update
-
-- Update UI copy away from stopping-point framing.
-- Add level select, undo, move/undo counters.
-- Update tile legend and i18n.
-- Verify mobile controls and build.
-
-### Phase 5: Playtest gate
-
-- Deploy prototype.
-- Watch 5–10 users.
-- Kill, simplify, or defer any mechanic that does not produce new thinking.
-
-## 17. Out of Scope
-
-- Procedural generation.
-- Level editor.
-- Accounts and cloud saves.
-- Leaderboards.
-- Daily challenges.
-- Monetization.
-- Story mode.
-- More than one advanced memory mechanic before playtesting.
-- Any mechanic that exists only because it sounds clever in a PRD.
-
-## 18. Decision Record
+- 10-14 level set;
+- all engine tests green;
+- mobile controls verified geometrically;
+- BGM passes the “not a drone” smell test;
+- 5-person silent playtest notes.
 
 Confidence: medium-high.
 
-Reason:
-
-- The critique matches the observed current engine and UI copy.
-- The proposed MVP directly addresses the abstraction mismatch.
-- The biggest unknown is not technical feasibility; it is whether `Dirt → Ice → Void + Anchor` produces enough level depth.
-
-Owner:
-
-- Product/mechanic decision: Liz.
-- Implementation decision: agent/developer working in the Carver repo.
-
-Next checkpoint:
-
-- A playable 15–20 level 2.0 prototype, not another document.
+The product thesis is strong. The remaining uncertainty is not whether Carver can be polished; it is whether enough levels can produce new thought without adding new mechanics. That must be proven in play, not argued in prose.
