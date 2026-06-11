@@ -132,6 +132,7 @@ export class Renderer {
     state: GameState,
     t: number,
     hints: Hint[] | null = null,
+    availableDirections: Direction[] = [],
   ) {
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     this.ctx.imageSmoothingEnabled = false;
@@ -264,6 +265,50 @@ export class Renderer {
           );
           this.ctx.shadowBlur = 0;
         }
+      }
+    }
+
+    // --- Available direction indicators on player's tile ---
+    if (
+      availableDirections.length > 0 &&
+      !state.sliding &&
+      !state.won &&
+      !state.dead
+    ) {
+      const px = ox + state.player.x * this.tileSize;
+      const py = oy + state.player.y * this.tileSize;
+      const cx = px + this.tileSize / 2;
+      const cy = py + this.tileSize / 2;
+      const pulse = Math.sin(t * 0.05) * 0.12 + 0.18;
+
+      for (const dir of availableDirections) {
+        let dx = 0, dy = 0;
+        if (dir === "UP") dy = -1;
+        if (dir === "DOWN") dy = 1;
+        if (dir === "LEFT") dx = -1;
+        if (dir === "RIGHT") dx = 1;
+
+        // Draw a subtle highlight on the adjacent tile
+        this.ctx.fillStyle = `rgba(122, 162, 247, ${pulse})`;
+        this.ctx.fillRect(
+          px + dx * this.tileSize + 3,
+          py + dy * this.tileSize + 3,
+          this.tileSize - 6,
+          this.tileSize - 6,
+        );
+
+        // Draw a tiny arrow pointing from player center
+        const arrowSize = this.tileSize * 0.28;
+        const offset = this.tileSize * 0.48;
+        this.ctx.fillStyle = `rgba(255, 255, 255, ${pulse + 0.15})`;
+        this.ctx.font = `${Math.floor(this.tileSize * 0.45)}px monospace`;
+        this.ctx.textAlign = "center";
+        this.ctx.textBaseline = "middle";
+        this.ctx.fillText(
+          DIRECTION_ARROW[dir],
+          cx + dx * offset,
+          cy + dy * offset,
+        );
       }
     }
 

@@ -48,7 +48,7 @@ export default function GameCanvas() {
   const [lastInput, setLastInput] = useState<
     Direction | "RESET" | "BLOCKED" | "NEXT" | "UNDO" | null
   >(null);
-  const [showHints, setShowHints] = useState(true);
+  const showHintsRef = useRef(true);
   const moveCountRef = useRef(0);
 
   const loadLevel = useCallback((levelIndex: number) => {
@@ -57,7 +57,7 @@ export default function GameCanvas() {
     setCurrentLevelIndex(levelIndex);
     setStatus("READY");
     moveCountRef.current = 0;
-    setShowHints(levelIndex in TUTORIAL_HINTS);
+    showHintsRef.current = levelIndex in TUTORIAL_HINTS;
   }, []);
 
   const flashInput = useCallback(
@@ -109,8 +109,8 @@ export default function GameCanvas() {
 
       if (result === "MOVED") {
         moveCountRef.current += 1;
-        if (showHints && moveCountRef.current >= 1) {
-          setShowHints(false);
+        if (showHintsRef.current && moveCountRef.current >= 1) {
+          showHintsRef.current = false;
         }
         flashInput(dir);
         SFX.move();
@@ -119,7 +119,7 @@ export default function GameCanvas() {
         SFX.blocked();
       }
     },
-    [flashInput, showHints],
+    [flashInput],
   );
 
   useEffect(() => {
@@ -159,7 +159,7 @@ export default function GameCanvas() {
     rendererRef.current = new Renderer(canvas);
     resize();
     moveCountRef.current = 0;
-    setShowHints(currentLevelIndex in TUTORIAL_HINTS);
+    showHintsRef.current = currentLevelIndex in TUTORIAL_HINTS;
 
     // Track previous state for transition detection
     let prevSliding: Direction | null = null;
@@ -229,9 +229,9 @@ export default function GameCanvas() {
       }
 
       // Draw tutorial hints
-      const hints = showHints ? (TUTORIAL_HINTS[currentLevelIndex] ?? null) : null;
+      const hints = showHintsRef.current ? (TUTORIAL_HINTS[currentLevelIndex] ?? null) : null;
 
-      renderer.draw(engine.state, t, hints);
+      renderer.draw(engine.state, t, hints, engine.getAvailableDirections());
       af = requestAnimationFrame(tick);
     };
     af = requestAnimationFrame(tick);
@@ -242,7 +242,7 @@ export default function GameCanvas() {
       if (inputFeedbackTimerRef.current)
         window.clearTimeout(inputFeedbackTimerRef.current);
     };
-  }, [currentLevelIndex, showHints]);
+  }, [currentLevelIndex]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

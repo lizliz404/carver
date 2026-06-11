@@ -20,6 +20,7 @@ export interface GameState {
 export class GameEngine {
   public state: GameState;
   private history: GameState[] = [];
+  private static readonly DIRECTIONS: Direction[] = ["UP", "DOWN", "LEFT", "RIGHT"];
 
   constructor(initialGrid: string[]) {
     this.state = this.parseGrid(initialGrid);
@@ -57,15 +58,7 @@ export class GameEngine {
     if (this.state.won || this.state.dead || this.state.sliding)
       return "INACTIVE";
 
-    const currentTile =
-      this.state.grid[this.state.player.y][this.state.player.x];
-
-    if (currentTile !== "DIRT") return "BLOCKED";
-
-    const nextPosition = this.getNextPosition(dir);
-    if (!this.isInBounds(nextPosition.x, nextPosition.y)) return "BLOCKED";
-    if (this.isBlockingTile(this.state.grid[nextPosition.y][nextPosition.x]))
-      return "BLOCKED";
+    if (!this.canMove(dir)) return "BLOCKED";
 
     this.history.push(this.cloneState(this.state));
     this.state.grid[this.state.player.y][this.state.player.x] = "ICE";
@@ -89,6 +82,23 @@ export class GameEngine {
 
     this.state = previousState;
     return true;
+  }
+
+  public getAvailableDirections(): Direction[] {
+    return GameEngine.DIRECTIONS.filter((dir) => this.canMove(dir));
+  }
+
+  private canMove(dir: Direction): boolean {
+    if (this.state.won || this.state.dead || this.state.sliding) return false;
+
+    const currentTile =
+      this.state.grid[this.state.player.y][this.state.player.x];
+    if (currentTile !== "DIRT") return false;
+
+    const nextPosition = this.getNextPosition(dir);
+    if (!this.isInBounds(nextPosition.x, nextPosition.y)) return false;
+
+    return !this.isBlockingTile(this.state.grid[nextPosition.y][nextPosition.x]);
   }
 
   private step(options: { preserveCurrentTile?: boolean } = {}) {
