@@ -6,7 +6,8 @@ You move across a small board where dirt gives you traction, ice makes you slide
 
 ## Play
 
-- Live game: https://carver.pages.dev
+- Live game: https://carver.lizliz.xyz
+- Also at: https://carver.pages.dev
 - Platforms: desktop browser and mobile browser
 - Controls: `WASD`, arrow keys, swipe, or on-screen touch controls
 - Undo: `U` or `Z`
