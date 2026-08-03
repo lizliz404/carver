@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "../styles/premium-one-pager.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://carver.pages.dev";
 const siteName = "Carver";

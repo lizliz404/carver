@@ -44,7 +44,7 @@ export default function GameCanvas() {
     }
   }, []);
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
-  const [status, setStatus] = useState("IDLE");
+  const [status, setStatus] = useState("LOADING BOARD");
   const [lastInput, setLastInput] = useState<
     Direction | "RESET" | "BLOCKED" | "NEXT" | "UNDO" | null
   >(null);
@@ -329,7 +329,7 @@ export default function GameCanvas() {
                   undoMove();
                 }}
               >
-                Undo
+                Undo last move
               </button>
               <button
                 type="button"
@@ -340,7 +340,7 @@ export default function GameCanvas() {
                   resetGame();
                 }}
               >
-                Restart
+                Restart this board
               </button>
             </div>
           </div>
@@ -419,7 +419,7 @@ export default function GameCanvas() {
                 key={dir}
                 type="button"
                 aria-label={`Move ${dir.toLowerCase()}`}
-                className={`${className} h-14 w-14 rounded-lg border bg-[#1a1b26] text-2xl font-black shadow transition duration-150 active:scale-95 active:bg-[#7aa2f7] active:text-[#05070a] ${
+                className={`${className} h-14 w-14 rounded-lg border bg-[#1a1b26] text-2xl font-black shadow transition duration-150 active:bg-[#7aa2f7] active:text-[#05070a] motion-safe:active:scale-95 ${
                   lastInput === dir
                     ? "border-[#7aa2f7] text-[#05070a] bg-[#7aa2f7] ring-2 ring-[#7aa2f7]/40"
                     : "border-[#7aa2f7]/60 text-[#c0caf5]"
@@ -438,7 +438,7 @@ export default function GameCanvas() {
         <div className="flex flex-col gap-2">
           <button
             type="button"
-            className="h-12 rounded-lg border border-[#7aa2f7]/70 bg-[#1a1b26] px-4 text-xs font-black uppercase tracking-widest text-[#7aa2f7] shadow active:scale-95 active:bg-[#7aa2f7] active:text-[#05070a]"
+            className="h-12 rounded-lg border border-[#7aa2f7]/70 bg-[#1a1b26] px-4 text-xs font-black uppercase tracking-widest text-[#7aa2f7] shadow active:bg-[#7aa2f7] active:text-[#05070a] motion-safe:active:scale-95"
             onPointerDown={(event) => {
               event.preventDefault();
               unlockAudio();
@@ -449,7 +449,7 @@ export default function GameCanvas() {
           </button>
           <button
             type="button"
-            className="h-12 rounded-lg border border-[#f7768e]/70 bg-[#1a1b26] px-4 text-xs font-black uppercase tracking-widest text-[#f7768e] shadow active:scale-95 active:bg-[#f7768e] active:text-[#05070a]"
+            className="h-12 rounded-lg border border-[#f7768e]/70 bg-[#1a1b26] px-4 text-xs font-black uppercase tracking-widest text-[#f7768e] shadow active:bg-[#f7768e] active:text-[#05070a] motion-safe:active:scale-95"
             onPointerDown={(event) => {
               event.preventDefault();
               unlockAudio();

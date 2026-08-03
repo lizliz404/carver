@@ -1,10 +1,20 @@
+import Link from "next/link";
+
 export default function NotFound() {
   return (
     <main className="min-h-screen bg-[#05070a] text-[#c0caf5] font-mono flex items-center justify-center p-6">
       <div className="border border-[#24283b] bg-[#16161e] p-8 max-w-md text-center">
         <p className="text-[#7aa2f7] text-xs font-bold tracking-widest mb-4">CARVER // 404</p>
         <h1 className="text-3xl font-bold mb-3">Out of Bounds</h1>
-        <p className="text-sm text-[#9aa5ce]">This tile does not exist.</p>
+        <p className="text-sm text-[#9aa5ce]">
+          This tile does not exist. Return to the board to keep carving.
+        </p>
+        <Link
+          href="/"
+          className="mt-6 inline-flex items-center justify-center border border-[#7aa2f7]/70 bg-[#7aa2f7]/15 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-[#7aa2f7] transition hover:bg-[#7aa2f7] hover:text-[#05070a]"
+        >
+          Back to Carver
+        </Link>
       </div>
     </main>
   );

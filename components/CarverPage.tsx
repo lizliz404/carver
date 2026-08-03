@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "@iconify/react";
 import heroicons from "@iconify-json/heroicons/icons.json";
 import type { IconifyIcon } from "@iconify/types";
+import { initPremiumOnePager } from "../lib/premium-one-pager";
 import GameCanvas from "./GameCanvas";
 
 const languageIcon = {
@@ -134,6 +135,16 @@ export default function CarverPage() {
   useEffect(() => {
     document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
   }, [locale]);
+
+  // 附 A light: progress + noise + selection/scrollbar/prm. No chapter dots on game shell.
+  useEffect(() => {
+    return initPremiumOnePager({
+      enableChapters: false,
+      enableReveal: false,
+      enableProgress: true,
+      enableNoise: true,
+    });
+  }, []);
 
   useEffect(() => {
     if (!isHelpOpen) return;
