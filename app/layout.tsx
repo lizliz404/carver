@@ -3,9 +3,10 @@ import Script from "next/script";
 import "./globals.css";
 import "../styles/premium-one-pager.css";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://carver.pages.dev";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://carver.lizliz.xyz";
 const siteName = "Carver";
-const description = "Browser puzzle: carve dirt into ice, turn void scars into braces, path to the goal. Free, no install.";
+const description =
+  "Browser puzzle: every move carves dirt into ice and leaves scars. Turn void braces into path control and slide to the goal. Free, no install.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -24,7 +25,8 @@ export const metadata: Metadata = {
     "mobile puzzle game",
   ],
   applicationName: siteName,
-  creator: siteName,
+  authors: [{ name: "Liz", url: "https://lizliz.xyz" }],
+  creator: "Liz",
   publisher: siteName,
   alternates: {
     canonical: "/",
@@ -53,10 +55,11 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "32x32" },
-      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+      { url: "/icon.png", type: "image/png", sizes: "120x120" },
     ],
     apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
   },
+  themeColor: "#05070a",
   robots: {
     index: true,
     follow: true,

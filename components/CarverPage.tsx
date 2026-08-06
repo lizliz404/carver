@@ -185,9 +185,9 @@ export default function CarverPage() {
             unoptimized
             className="h-10 w-10 rounded-lg border border-[#414868] bg-[#0a0c10] shadow-[0_0_18px_rgba(122,162,247,0.22)]"
           />
-          <span className="text-2xl font-black tracking-tight text-[#c0caf5]">
+          <h1 className="text-2xl font-black tracking-tight text-[#c0caf5]">
             carver
-          </span>
+          </h1>
         </div>
         <div className="flex items-center gap-2">
           <div
@@ -335,7 +335,15 @@ export default function CarverPage() {
       </div>
 
       <footer className="h-10 bg-[#1a1b26] border-t border-[#24283b] flex items-center px-6 shrink-0">
-        <div className="ml-auto text-[9px] text-[#414868]">© 2026 CARVER</div>
+        <div className="ml-auto text-[9px] text-[#414868]">
+          © 2026 CARVER ·{" "}
+          <a
+            href="https://lizliz.xyz"
+            className="transition hover:text-[#7aa2f7]"
+          >
+            by Liz
+          </a>
+        </div>
       </footer>
     </main>
   );
