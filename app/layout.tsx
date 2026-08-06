@@ -4,8 +4,7 @@ import "../styles/premium-one-pager.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://carver.pages.dev";
 const siteName = "Carver";
-const description =
-  "Play Carver, a free browser puzzle game about irreversible damage becoming infrastructure: carve dirt into ice, use void scars as braces, and find a path to the goal.";
+const description = "Browser puzzle: carve dirt into ice, turn void scars into braces, path to the goal. Free, no install.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
