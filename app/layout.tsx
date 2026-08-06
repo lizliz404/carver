@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import "../styles/premium-one-pager.css";
 
@@ -76,7 +77,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased bg-black text-white">{children}</body>
+      <body className="antialiased bg-black text-white">
+        {children}
+        {/* GA4: shared property with lizliz.xyz (G-TXVLTJJ878); filter by hostname in GA */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-TXVLTJJ878"
+          strategy="afterInteractive"
+        />
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-TXVLTJJ878');`}
+        </Script>
+      </body>
     </html>
   );
 }
