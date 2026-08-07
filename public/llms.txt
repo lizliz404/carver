@@ -1,0 +1,28 @@
+# Carver
+
+> Free browser ice-sliding puzzle: every move carves dirt into ice and leaves void scars you can use as braces. Built by Liz.
+
+## Product
+
+- Name: Carver
+- Category: Browser puzzle / ice sliding / irreversible movement
+- Price: Free, no install
+- Languages: English, zh-CN (in-app toggle)
+- Play: https://carver.lizliz.xyz/
+
+## Maker
+
+- Liz — https://lizliz.xyz/
+
+## Key facts
+
+- Stepping off Dirt converts it to Ice.
+- Sliding over old Ice breaks it into Void behind you.
+- Void can brace a slide and restore a decision point.
+- Single-player, keyboard + touch controls, undo/restart.
+
+## Links
+
+- Canonical: https://carver.lizliz.xyz/
+- Sitemap: https://carver.lizliz.xyz/sitemap.xml
+- OG image: https://carver.lizliz.xyz/og-image.png

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
 import "../styles/premium-one-pager.css";
@@ -7,6 +7,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://carver.lizliz.xyz";
 const siteName = "Carver";
 const description =
   "Browser puzzle: every move carves dirt into ice and leaves scars. Turn void braces into path control and slide to the goal. Free, no install.";
+
+// Next.js emits theme-color from viewport, not metadata.themeColor.
+export const viewport: Viewport = {
+  themeColor: "#05070a",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -59,7 +64,6 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
   },
-  themeColor: "#05070a",
   robots: {
     index: true,
     follow: true,

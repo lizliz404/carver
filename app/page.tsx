@@ -1,4 +1,3 @@
-import Script from 'next/script';
 import CarverPage from '../components/CarverPage';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://carver.lizliz.xyz';
@@ -37,7 +36,8 @@ const gameSchema = {
 export default function Page() {
   return (
     <>
-      <Script
+      {/* Plain script so static export puts JSON-LD in initial HTML (next/script kept it in RSC only). */}
+      <script
         id="carver-video-game-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(gameSchema) }}
