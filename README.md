@@ -1,5 +1,7 @@
 # Carver
 
+**Status:** Shipped prototype, parked. Live at https://carver.lizliz.xyz. Do not add levels, rewrite the engine, or restyle unless Liz explicitly asks.
+
 Carver is a browser-first puzzle game about irreversible damage becoming infrastructure.
 
 You move across a small board where dirt gives you traction, ice makes you slide, reused ice collapses into void, and void scars can become deliberate braces. The core question is not just “how do I preserve enough resources?” but “how can the damage I already caused become the structure that lets me move next?”
